@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Nuke Tracker — Thermonuclear Darts</title>
+  <meta name="description" content="Companion app for Thermonuclear Darts. Track codes, nukes, and fallout.">
+  <link rel="stylesheet" href="../../../styles.css">
+  <style>
+    /* App-specific styles */
+    :root {
+      --app-bg: #0d0d0d;
+    }
+    
+    body {
+      background: var(--app-bg);
+      min-height: 100vh;
+      padding: 1rem;
+    }
+    
+    .app-container {
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    
+    .app-header {
+      text-align: center;
+      padding: 1rem 0 2rem;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      margin-bottom: 2rem;
+    }
+    
+    .app-header h1 {
+      font-size: 1.5rem;
+      margin-bottom: 0.25rem;
+    }
+    
+    .app-header .subtitle {
+      font-size: 0.8rem;
+      opacity: 0.6;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    
+    /* Setup Screen */
+    .screen {
+      display: none;
+    }
+    
+    .screen.active {
+      display: block;
+    }
+    
+    .setup-section {
+      margin-bottom: 2rem;
+    }
+    
+    .setup-section h3 {
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      color: var(--orange);
+    }
+    
+    .player-inputs {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    
+    .player-input {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    
+    .player-input label {
+      font-family: 'Archivo Black', sans-serif;
+      font-size: 0.9rem;
+      min-width: 80px;
+    }
+    
+    .player-input input {
+      flex: 1;
+      background: var(--black-light);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: var(--cream);
+      padding: 0.75rem;
+      font-family: 'Source Serif 4', serif;
+      font-size: 1rem;
+    }
+    
+    .player-input input:focus {
+      outline: none;
+      border-color: var(--orange);
+    }
+    
+    .player-input .remove-player {
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.3);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0 0.5rem;
+    }
+    
+    .player-input .remove-player:hover {
+      color: #ff4444;
+    }
+    
+    .add-player-btn {
+      background: none;
+      border: 1px dashed rgba(255,255,255,0.3);
+      color: rgba(255,255,255,0.5);
+      padding: 0.75rem;
+      width: 100%;
+      cursor: pointer;
+      font-family: 'Source Serif 4', serif;
+      margin-top: 0.5rem;
+      transition: all 0.2s ease;
+    }
+    
+    .add-player-btn:hover {
+      border-color: var(--orange);
+      color: var(--orange);
+    }
+    
+    /* Code Display */
+    .code-display {
+      background: var(--black-light);
+      padding: 2rem;
+      text-align: center;
+      margin-bottom: 2rem;
+      border: 2px solid var(--orange);
+    }
+    
+    .code-label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      opacity: 0.6;
+      margin-bottom: 0.5rem;
+    }
+    
+    .code-numbers {
+      font-family: 'Archivo Black', sans-serif;
+      font-size: 3rem;
+      color: var(--orange);
+      letter-spacing: 0.2em;
+    }
+    
+    .code-hint {
+      font-size: 0.8rem;
+      opacity: 0.5;
+      margin-top: 0.5rem;
+    }
+    
+    /* Game Screen */
+    .player-card {
+      background: var(--black-light);
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      border-left: 4px solid var(--orange);
+    }
+    
+    .player-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    
+    .player-name {
+      font-family: 'Archivo Black', sans-serif;
+      font-size: 1.1rem;
+    }
+    
+    .player-fallout {
+      font-size: 0.9rem;
+      color: var(--orange);
+    }
+    
+    .code-progress {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    
+    .code-slot {
+      flex: 1;
+      background: var(--black);
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 0.5rem;
+      text-align: center;
+      font-family: 'Archivo Black', sans-serif;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .code-slot:hover {
+      border-color: var(--orange);
+    }
+    
+    .code-slot.hit {
+      background: var(--orange);
+      color: var(--black);
+      border-color: var(--orange);
+    }
+    
+    .code-slot.current {
+      border-color: var(--orange);
+      box-shadow: 0 0 10px rgba(232, 93, 4, 0.3);
+    }
+    
+    .nuke-arsenal {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    
+    .nuke-arsenal-label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      opacity: 0.6;
+      margin-right: 0.5rem;
+    }
+    
+    .nuke-icon {
+      width: 28px;
+      height: 28px;
+      background: var(--orange);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+    }
+    
+    .nuke-icon.used {
+      background: rgba(255,255,255,0.1);
+      opacity: 0.3;
+    }
+    
+    .nuke-icon.locked {
+      background: none;
+      border: 2px dashed rgba(255,255,255,0.3);
+    }
+    
+    .nuke-icon.bonus {
+      border: 2px solid gold;
+    }
+    
+    .launch-btn {
+      width: 100%;
+      padding: 1rem;
+      background: linear-gradient(135deg, #8B0000 0%, #ff4444 100%);
+      border: none;
+      color: white;
+      font-family: 'Archivo Black', sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s ease;
+    }
+    
+    .launch-btn:hover:not(:disabled) {
+      transform: scale(1.02);
+      box-shadow: 0 0 20px rgba(255, 68, 68, 0.4);
+    }
+    
+    .launch-btn:disabled {
+      background: rgba(255,255,255,0.1);
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+    
+    .launch-btn.launching {
+      animation: pulse 0.3s ease-in-out;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.9);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal-overlay.active {
+      display: flex;
+    }
+    
+    .modal {
+      background: var(--black-light);
+      padding: 2rem;
+      max-width: 350px;
+      width: 90%;
+      text-align: center;
+      border: 2px solid var(--orange);
+    }
+    
+    .modal h3 {
+      margin-bottom: 1.5rem;
+    }
+    
+    .modal-targets {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .target-btn {
+      background: var(--black);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: var(--cream);
+      padding: 1rem;
+      font-family: 'Archivo Black', sans-serif;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .target-btn:hover {
+      background: var(--orange);
+      color: var(--black);
+      border-color: var(--orange);
+    }
+    
+    .modal-cancel {
+      background: none;
+      border: 1px solid rgba(255,255,255,0.3);
+      color: rgba(255,255,255,0.6);
+      padding: 0.75rem 1.5rem;
+      cursor: pointer;
+      font-family: 'Source Serif 4', serif;
+    }
+    
+    /* Result Modal */
+    .result-modal {
+      text-align: center;
+    }
+    
+    .result-modal h2 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+    
+    .result-type {
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .result-points {
+      font-family: 'Archivo Black', sans-serif;
+      font-size: 3rem;
+      color: var(--orange);
+      margin: 1rem 0;
+    }
+    
+    .result-effect {
+      font-size: 0.9rem;
+      opacity: 0.7;
+      margin-bottom: 1.5rem;
+    }
+    
+    .hit-buttons {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+    
+    .hit-btn {
+      padding: 0.75rem 1rem;
+      border: none;
+      font-family: 'Archivo Black', sans-serif;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    
+    .hit-btn.triple {
+      background: #ff4444;
+      color: white;
+    }
+    
+    .hit-btn.double {
+      background: var(--orange);
+      color: var(--black);
+    }
+    
+    .hit-btn.single {
+      background: rgba(255,255,255,0.2);
+      color: var(--cream);
+    }
+    
+    .hit-btn.miss {
+      background: none;
+      border: 1px solid rgba(255,255,255,0.3);
+      color: rgba(255,255,255,0.5);
+    }
+    
+    /* Footer */
+    .app-footer {
+      text-align: center;
+      padding: 2rem 0;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      margin-top: 2rem;
+    }
+    
+    .app-footer a {
+      font-size: 0.8rem;
+      opacity: 0.5;
+    }
+    
+    .new-game-btn {
+      background: none;
+      border: 1px solid rgba(255,255,255,0.3);
+      color: rgba(255,255,255,0.5);
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      font-size: 0.8rem;
+      margin-bottom: 1rem;
+    }
+    
+    .new-game-btn:hover {
+      border-color: var(--orange);
+      color: var(--orange);
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <header class="app-header">
+      <h1>☢️ NUKE TRACKER</h1>
+      <div class="subtitle">Thermonuclear Darts Companion</div>
+    </header>
+    
+    <!-- Setup Screen -->
+    <div id="setup-screen" class="screen active">
+      <div class="setup-section">
+        <h3>Players</h3>
+        <div class="player-inputs" id="player-inputs">
+          <div class="player-input">
+            <label>Player 1</label>
+            <input type="text" placeholder="Name" value="Player 1">
+          </div>
+          <div class="player-input">
+            <label>Player 2</label>
+            <input type="text" placeholder="Name" value="Player 2">
+          </div>
+        </div>
+        <button class="add-player-btn" id="add-player-btn">+ Add Player</button>
+      </div>
+      
+      <button class="btn" id="start-game-btn" style="width: 100%;">Generate Code & Start</button>
+    </div>
+    
+    <!-- Game Screen -->
+    <div id="game-screen" class="screen">
+      <div class="code-display">
+        <div class="code-label">Launch Code</div>
+        <div class="code-numbers" id="code-display">- - -</div>
+        <div class="code-hint">Hit in order to unlock nukes</div>
+      </div>
+      
+      <div id="player-cards"></div>
+      
+      <div class="app-footer">
+        <button class="new-game-btn" id="new-game-btn">New Game</button>
+        <br>
+        <a href="../">← Back to Rules</a>
+      </div>
+    </div>
+    
+    <!-- Target Selection Modal -->
+    <div class="modal-overlay" id="target-modal">
+      <div class="modal">
+        <h3>Select Target Number</h3>
+        <div class="modal-targets" id="modal-targets">
+          <!-- Filled by JS -->
+        </div>
+        <button class="modal-cancel" id="cancel-launch">Cancel</button>
+      </div>
+    </div>
+    
+    <!-- Launch Result Modal -->
+    <div class="modal-overlay" id="result-modal">
+      <div class="modal result-modal">
+        <h2 id="result-title">LAUNCH</h2>
+        <div id="result-target"></div>
+        <div class="hit-buttons" id="hit-buttons">
+          <button class="hit-btn triple" data-hit="triple">TRIPLE (40pts)</button>
+          <button class="hit-btn double" data-hit="double">DOUBLE (20pts)</button>
+          <button class="hit-btn single" data-hit="single">SINGLE (erase)</button>
+          <button class="hit-btn miss" data-hit="miss">MISS</button>
+        </div>
+        <div class="result-effect" id="result-effect"></div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Game State
+    let gameState = {
+      code: [],
+      players: []
+    };
+    
+    // DOM Elements
+    const setupScreen = document.getElementById('setup-screen');
+    const gameScreen = document.getElementById('game-screen');
+    const playerInputs = document.getElementById('player-inputs');
+    const addPlayerBtn = document.getElementById('add-player-btn');
+    const startGameBtn = document.getElementById('start-game-btn');
+    const codeDisplay = document.getElementById('code-display');
+    const playerCards = document.getElementById('player-cards');
+    const newGameBtn = document.getElementById('new-game-btn');
+    const targetModal = document.getElementById('target-modal');
+    const modalTargets = document.getElementById('modal-targets');
+    const cancelLaunchBtn = document.getElementById('cancel-launch');
+    const resultModal = document.getElementById('result-modal');
+    const hitButtons = document.getElementById('hit-buttons');
+    
+    let currentLaunchPlayer = null;
+    let currentLaunchTarget = null;
+    
+    // Generate random code (3 numbers from 1-14, no duplicates)
+    function generateCode() {
+      const numbers = [];
+      while (numbers.length < 3) {
+        const num = Math.floor(Math.random() * 14) + 1;
+        if (!numbers.includes(num)) {
+          numbers.push(num);
+        }
+      }
+      return numbers;
+    }
+    
+    // Add player input
+    let playerCount = 2;
+    addPlayerBtn.addEventListener('click', () => {
+      if (playerCount >= 4) return;
+      playerCount++;
+      
+      const div = document.createElement('div');
+      div.className = 'player-input';
+      div.innerHTML = `
+        <label>Player ${playerCount}</label>
+        <input type="text" placeholder="Name" value="Player ${playerCount}">
+        <button class="remove-player">×</button>
+      `;
+      
+      div.querySelector('.remove-player').addEventListener('click', () => {
+        div.remove();
+        playerCount--;
+        updatePlayerLabels();
+      });
+      
+      playerInputs.appendChild(div);
+      
+      if (playerCount >= 4) {
+        addPlayerBtn.style.display = 'none';
+      }
+    });
+    
+    function updatePlayerLabels() {
+      const inputs = playerInputs.querySelectorAll('.player-input');
+      inputs.forEach((input, i) => {
+        input.querySelector('label').textContent = `Player ${i + 1}`;
+      });
+    }
+    
+    // Start game
+    startGameBtn.addEventListener('click', () => {
+      const inputs = playerInputs.querySelectorAll('input');
+      const names = Array.from(inputs).map(input => input.value || `Player ${Array.from(inputs).indexOf(input) + 1}`);
+      
+      gameState.code = generateCode();
+      gameState.players = names.map(name => ({
+        name,
+        codeProgress: 0,
+        nukesUnlocked: false,
+        nukesAvailable: 3,
+        nukesUsed: 0,
+        bonusNuke: false,
+        consecutiveHits: 0,
+        falloutPoints: 0
+      }));
+      
+      renderGame();
+      setupScreen.classList.remove('active');
+      gameScreen.classList.add('active');
+    });
+    
+    // Render game
+    function renderGame() {
+      codeDisplay.textContent = gameState.code.join(' - ');
+      
+      playerCards.innerHTML = gameState.players.map((player, index) => `
+        <div class="player-card" data-player="${index}">
+          <div class="player-card-header">
+            <div class="player-name">${player.name}</div>
+            <div class="player-fallout">${player.falloutPoints > 0 ? `+${player.falloutPoints} fallout` : ''}</div>
+          </div>
+          
+          <div class="code-progress">
+            ${gameState.code.map((num, i) => `
+              <div class="code-slot ${i < player.codeProgress ? 'hit' : ''} ${i === player.codeProgress && !player.nukesUnlocked ? 'current' : ''}" 
+                   data-player="${index}" data-slot="${i}">
+                ${i < player.codeProgress ? '✓' : num}
+              </div>
+            `).join('')}
+          </div>
+          
+          <div class="nuke-arsenal">
+            <span class="nuke-arsenal-label">Nukes:</span>
+            ${renderNukes(player)}
+          </div>
+          
+          <button class="launch-btn" data-player="${index}" ${!player.nukesUnlocked || player.nukesAvailable <= 0 ? 'disabled' : ''}>
+            ${!player.nukesUnlocked ? '🔒 Unlock Code First' : player.nukesAvailable <= 0 ? 'No Nukes Left' : '☢️ Launch Nuke'}
+          </button>
+        </div>
+      `).join('');
+      
+      // Add event listeners
+      document.querySelectorAll('.code-slot').forEach(slot => {
+        slot.addEventListener('click', handleCodeSlotClick);
+      });
+      
+      document.querySelectorAll('.launch-btn').forEach(btn => {
+        btn.addEventListener('click', handleLaunchClick);
+      });
+    }
+    
+    function renderNukes(player) {
+      let html = '';
+      const total = player.bonusNuke ? 4 : 3;
+      
+      for (let i = 0; i < total; i++) {
+        if (i < player.nukesUsed) {
+          html += `<div class="nuke-icon used">☢️</div>`;
+        } else if (player.nukesUnlocked) {
+          html += `<div class="nuke-icon ${i === 3 ? 'bonus' : ''}">☢️</div>`;
+        } else {
+          html += `<div class="nuke-icon locked"></div>`;
+        }
+      }
+      
+      return html;
+    }
+    
+    // Handle code slot click (mark as hit)
+    function handleCodeSlotClick(e) {
+      const playerIndex = parseInt(e.target.dataset.player);
+      const slotIndex = parseInt(e.target.dataset.slot);
+      const player = gameState.players[playerIndex];
+      
+      if (player.nukesUnlocked) return;
+      if (slotIndex !== player.codeProgress) return;
+      
+      player.codeProgress++;
+      player.consecutiveHits++;
+      
+      if (player.codeProgress >= 3) {
+        player.nukesUnlocked = true;
+        
+        // Check for bonus nuke (all 3 hit consecutively)
+        if (player.consecutiveHits >= 3) {
+          player.bonusNuke = true;
+          player.nukesAvailable = 4;
+        }
+      }
+      
+      renderGame();
+    }
+    
+    // Handle launch click
+    function handleLaunchClick(e) {
+      const playerIndex = parseInt(e.target.dataset.player);
+      const player = gameState.players[playerIndex];
+      
+      if (!player.nukesUnlocked || player.nukesAvailable <= 0) return;
+      
+      currentLaunchPlayer = playerIndex;
+      
+      // Show target selection modal
+      modalTargets.innerHTML = [20, 19, 18, 17, 16, 15, 'Bull'].map(num => `
+        <button class="target-btn" data-target="${num}">${num}</button>
+      `).join('');
+      
+      modalTargets.querySelectorAll('.target-btn').forEach(btn => {
+        btn.addEventListener('click', handleTargetSelect);
+      });
+      
+      targetModal.classList.add('active');
+    }
+    
+    // Handle target selection
+    function handleTargetSelect(e) {
+      currentLaunchTarget = e.target.dataset.target;
+      targetModal.classList.remove('active');
+      
+      // Show result modal
+      document.getElementById('result-title').textContent = `☢️ LAUNCHING ON ${currentLaunchTarget}`;
+      document.getElementById('result-target').textContent = `Did you hit the ${currentLaunchTarget}?`;
+      document.getElementById('result-effect').textContent = '';
+      
+      resultModal.classList.add('active');
+    }
+    
+    // Handle hit result
+    hitButtons.addEventListener('click', (e) => {
+      if (!e.target.classList.contains('hit-btn')) return;
+      
+      const hitType = e.target.dataset.hit;
+      const player = gameState.players[currentLaunchPlayer];
+      
+      let effect = '';
+      
+      if (hitType === 'miss') {
+        effect = 'Nuke wasted. No effect.';
+      } else {
+        // Erase all other players' marks
+        effect = `All opponents lose marks on ${currentLaunchTarget}!`;
+        
+        if (hitType === 'triple') {
+          player.falloutPoints += 40;
+          effect += ' FALLOUT: +40 points!';
+        } else if (hitType === 'double') {
+          player.falloutPoints += 20;
+          effect += ' +20 points!';
+        }
+      }
+      
+      player.nukesAvailable--;
+      player.nukesUsed++;
+      
+      document.getElementById('result-effect').textContent = effect;
+      
+      setTimeout(() => {
+        resultModal.classList.remove('active');
+        renderGame();
+      }, 2000);
+    });
+    
+    // Cancel launch
+    cancelLaunchBtn.addEventListener('click', () => {
+      targetModal.classList.remove('active');
+      currentLaunchPlayer = null;
+    });
+    
+    // New game
+    newGameBtn.addEventListener('click', () => {
+      gameScreen.classList.remove('active');
+      setupScreen.classList.add('active');
+    });
+  </script>
+</body>
+</html>

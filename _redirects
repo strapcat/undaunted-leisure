@@ -1,0 +1,5 @@
+# WODA-forward entry points (Netlify redirects)
+# Activates once each subdomain is added as a domain alias in Netlify.
+
+# woda.undauntedleisure.com -> the WODA hub (branded front door, brand-forward URL)
+https://woda.undauntedleisure.com/*   https://undauntedleisure.com/woda/:splat   301!

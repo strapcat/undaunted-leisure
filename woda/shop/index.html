@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shop — WODA</title>
+  <link rel="stylesheet" href="../../styles.css">
+  <meta name="description" content="WODA merchandise.">
+  <style>
+    .shop-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      margin: 3rem 0;
+    }
+    
+    .product-card {
+      background: var(--black-light);
+      text-align: center;
+      transition: transform 0.2s ease;
+    }
+    
+    .product-card:hover {
+      transform: translateY(-4px);
+    }
+    
+    .product-image {
+      width: 100%;
+      background: #000;
+    }
+    
+    .product-image img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    
+    .product-info {
+      padding: 1.5rem;
+    }
+    
+    .product-title {
+      font-family: 'Archivo Black', sans-serif;
+      text-transform: uppercase;
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .product-status {
+      display: inline-block;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      background: var(--orange);
+      color: var(--black);
+      padding: 0.3rem 0.6rem;
+      margin-top: 0.5rem;
+    }
+    
+    .back-link {
+      display: inline-block;
+      margin-bottom: 2rem;
+      font-size: 0.9rem;
+      opacity: 0.7;
+    }
+    
+    .back-link:hover {
+      opacity: 1;
+    }
+    
+    .shop-note {
+      text-align: center;
+      margin-top: 2rem;
+      padding: 2rem;
+      border: 1px dashed rgba(255,255,255,0.2);
+    }
+    
+    .shop-note p {
+      margin: 0;
+      opacity: 0.7;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header style="padding: 2rem 0;">
+      <a href="/woda/" class="back-link">← Back to WODA</a>
+      <h1 style="font-size: clamp(2rem, 6vw, 3rem);">Shop</h1>
+    </header>
+    
+    <main>
+      <div class="shop-grid">
+        <div class="product-card">
+          <div class="product-image">
+            <img src="../../images/woda-tshirt.png" alt="WODA Fox T-Shirt - Heather Orange">
+          </div>
+          <div class="product-info">
+            <h3 class="product-title">WODA Fox Tee</h3>
+            <a href="https://woda.printful.me" target="_blank" class="btn" style="margin-top: 0.5rem;">Shop Now</a>
+          </div>
+        </div>
+        
+        <div class="product-card">
+          <div class="product-image">
+            <img src="../../images/woda-hoodie.png" alt="WODA OG Hoodie - Carbon Grey">
+          </div>
+          <div class="product-info">
+            <h3 class="product-title">WODA OG Hoodie</h3>
+            <a href="https://woda.printful.me" target="_blank" class="btn" style="margin-top: 0.5rem;">Shop Now</a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="shop-note">
+        <p>Ships worldwide via Printful. Follow <a href="https://x.com/W_O_D_A" target="_blank">@W_O_D_A</a> for new drops.</p>
+      </div>
+    </main>
+    
+    <footer style="margin-top: 4rem;">
+      <a href="/woda/">WODA</a>
+      <span style="color: rgba(255,255,255,0.3); margin: 0 1rem;">|</span>
+      <a href="/">Undaunted Leisure</a>
+      <span style="color: rgba(255,255,255,0.3); margin: 0 1rem;">|</span>
+      <a href="https://x.com/W_O_D_A" target="_blank" rel="noopener">@W_O_D_A</a>
+    </footer>
+  </div>
+</body>
+</html>

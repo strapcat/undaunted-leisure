@@ -1,0 +1,349 @@
+/* UNDAUNTED LEISURE / WODA
+   Aesthetic: Weathered, gritty, backyard mythology
+   Colors: Orange, black, aged texture
+   Tone: Deadpan serious about ridiculous things
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap');
+
+:root {
+  --orange: #e85d04;
+  --orange-dark: #bc4b03;
+  --orange-light: #f48c06;
+  --black: #0a0a0a;
+  --black-light: #1a1a1a;
+  --cream: #f5f0e6;
+  --cream-dark: #e6dfd1;
+  --grain-opacity: 0.4;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 18px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Source Serif 4', Georgia, serif;
+  background-color: var(--black);
+  color: var(--cream);
+  line-height: 1.6;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Grain overlay for weathered texture */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: var(--grain-opacity);
+  pointer-events: none;
+  z-index: 1000;
+}
+
+/* Typography */
+h1, h2, h3 {
+  font-family: 'Archivo Black', Impact, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+}
+
+h1 {
+  font-size: clamp(2.5rem, 8vw, 5rem);
+}
+
+h2 {
+  font-size: clamp(1.8rem, 5vw, 3rem);
+  color: var(--orange);
+}
+
+h3 {
+  font-size: 1.4rem;
+  color: var(--orange-light);
+}
+
+p {
+  margin-bottom: 1rem;
+  max-width: 65ch;
+}
+
+a {
+  color: var(--orange);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--orange-light);
+}
+
+/* Layout */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* Hero sections */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 2rem;
+  position: relative;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 200px;
+  background: linear-gradient(to top, var(--black), transparent);
+  pointer-events: none;
+}
+
+/* Logo */
+.logo {
+  width: 250px;
+  height: auto;
+  max-width: 80%;
+  border-radius: 8px;
+  object-fit: contain;
+  border: 3px solid var(--orange);
+  margin-bottom: 2rem;
+  filter: saturate(1.1);
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.logo:hover {
+  transform: scale(1.03);
+  filter: saturate(1.3);
+}
+
+.logo-small {
+  width: 60px;
+  height: 60px;
+}
+
+/* Navigation */
+nav {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 3rem;
+}
+
+nav a {
+  font-family: 'Archivo Black', Impact, sans-serif;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0.5rem 1rem;
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+nav a:hover {
+  border-color: var(--orange);
+}
+
+nav a::before {
+  content: '→ ';
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+nav a:hover::before {
+  opacity: 1;
+}
+
+/* Tagline */
+.tagline {
+  font-style: italic;
+  color: var(--cream-dark);
+  font-size: 1.1rem;
+  max-width: 500px;
+  margin: 1rem auto;
+}
+
+/* Content sections */
+.section {
+  padding: 4rem 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.section--orange {
+  background: linear-gradient(135deg, var(--orange-dark) 0%, var(--orange) 100%);
+  color: var(--black);
+  max-width: 100%;
+  padding: 4rem 2rem;
+}
+
+.section--orange h2,
+.section--orange h3 {
+  color: var(--black);
+}
+
+/* Rules list */
+.rules {
+  list-style: none;
+  counter-reset: rules;
+}
+
+.rules li {
+  counter-increment: rules;
+  padding: 1.5rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding-left: 3rem;
+  position: relative;
+}
+
+.rules li::before {
+  content: counter(rules);
+  position: absolute;
+  left: 0;
+  top: 1.5rem;
+  font-family: 'Archivo Black', Impact, sans-serif;
+  font-size: 1.5rem;
+  color: var(--orange);
+}
+
+/* Buttons */
+.btn {
+  display: inline-block;
+  font-family: 'Archivo Black', Impact, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 1rem 2rem;
+  background: var(--orange);
+  color: var(--black);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 1rem;
+}
+
+.btn:hover {
+  background: var(--orange-light);
+  color: var(--black);
+  transform: translateY(-2px);
+}
+
+.btn--outline {
+  background: transparent;
+  border: 2px solid var(--orange);
+  color: var(--orange);
+}
+
+.btn--outline:hover {
+  background: var(--orange);
+  color: var(--black);
+}
+
+/* Footer */
+footer {
+  padding: 3rem 2rem;
+  text-align: center;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+footer a {
+  margin: 0 1rem;
+}
+
+.social-icon {
+  width: 24px;
+  height: 24px;
+  fill: var(--cream);
+  transition: fill 0.2s ease;
+}
+
+.social-icon:hover {
+  fill: var(--orange);
+}
+
+/* Coming soon badge */
+.coming-soon {
+  display: inline-block;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  background: rgba(255,255,255,0.1);
+  padding: 0.2rem 0.5rem;
+  margin-left: 0.5rem;
+  vertical-align: middle;
+}
+
+/* Shop item */
+.shop-item {
+  background: var(--black-light);
+  padding: 2rem;
+  text-align: center;
+  max-width: 400px;
+  margin: 2rem auto;
+}
+
+.shop-item img {
+  max-width: 100%;
+  margin-bottom: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  html {
+    font-size: 16px;
+  }
+  
+  .hero {
+    min-height: auto;
+    padding: 4rem 1.5rem;
+  }
+  
+  .logo {
+    width: 120px;
+    height: 120px;
+  }
+  
+  nav a {
+    font-size: 1rem;
+  }
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-in {
+  animation: fadeIn 0.6s ease forwards;
+}
+
+.animate-in:nth-child(1) { animation-delay: 0.1s; }
+.animate-in:nth-child(2) { animation-delay: 0.2s; }
+.animate-in:nth-child(3) { animation-delay: 0.3s; }
+.animate-in:nth-child(4) { animation-delay: 0.4s; }
+.animate-in:nth-child(5) { animation-delay: 0.5s; }

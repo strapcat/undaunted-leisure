@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thermonuclear Darts — WODA</title>
+  <meta name="description" content="A Cricket variant for those who want mutually assured destruction.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;0,700;1,400&family=Cinzel:wght@700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --parchment: #f4f1e8;
+      --parchment-dark: #e8e4d8;
+      --ink: #1a1a1a;
+      --ink-light: #3a3a3a;
+      --red: #8b0000;
+      --orange: #c65d00;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Spectral', 'Times New Roman', serif;
+      background: var(--parchment);
+      color: var(--ink);
+      font-size: 11pt;
+      line-height: 1.4;
+    }
+    
+    /* Page texture overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      opacity: 0.03;
+      pointer-events: none;
+      z-index: 1000;
+    }
+    
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: var(--parchment);
+    }
+    
+    /* Header */
+    .manual-header {
+      text-align: center;
+      border-bottom: 3px double var(--ink);
+      padding-bottom: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    
+    .manual-header h1 {
+      font-family: 'Cinzel', 'Times New Roman', serif;
+      font-size: 2.5rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin-bottom: 0.25rem;
+    }
+    
+    .manual-header .subtitle {
+      font-style: italic;
+      font-size: 1rem;
+      color: var(--ink-light);
+    }
+    
+    .woda-mark {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      margin-top: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    
+    .woda-mark img {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+    }
+    
+    /* Two column layout */
+    .columns {
+      column-count: 2;
+      column-gap: 2rem;
+      column-rule: 1px solid rgba(0,0,0,0.2);
+    }
+    
+    @media (max-width: 700px) {
+      .columns {
+        column-count: 1;
+      }
+    }
+    
+    .columns > * {
+      break-inside: avoid;
+    }
+    
+    /* Section headers */
+    h2 {
+      font-family: 'Cinzel', 'Times New Roman', serif;
+      font-size: 1.1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      border-bottom: 1px solid var(--ink);
+      padding-bottom: 0.25rem;
+      margin: 1.5rem 0 0.75rem;
+    }
+    
+    h2:first-child {
+      margin-top: 0;
+    }
+    
+    h3 {
+      font-weight: 700;
+      font-size: 1rem;
+      margin: 1rem 0 0.5rem;
+    }
+    
+    p {
+      margin-bottom: 0.75rem;
+      text-align: justify;
+      hyphens: auto;
+    }
+    
+    /* Stat block style */
+    .stat-block {
+      background: var(--parchment-dark);
+      border: 1px solid var(--ink);
+      padding: 1rem;
+      margin: 1rem 0;
+      font-size: 0.95rem;
+    }
+    
+    .stat-block-title {
+      font-family: 'Cinzel', serif;
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--ink);
+      padding-bottom: 0.25rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .stat-line {
+      display: flex;
+      margin-bottom: 0.25rem;
+    }
+    
+    .stat-label {
+      font-weight: 600;
+      min-width: 140px;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+    }
+    
+    .stat-value {
+      flex: 1;
+    }
+    
+    /* Special callout */
+    .callout {
+      border-left: 3px solid var(--red);
+      padding-left: 1rem;
+      margin: 1rem 0;
+      font-style: italic;
+    }
+    
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+    }
+    
+    th, td {
+      border: 1px solid var(--ink);
+      padding: 0.35rem 0.5rem;
+      text-align: left;
+    }
+    
+    th {
+      background: var(--parchment-dark);
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 0.8rem;
+      letter-spacing: 0.05em;
+    }
+    
+    /* Definition list style */
+    .def-list dt {
+      font-weight: 700;
+      margin-top: 0.75rem;
+    }
+    
+    .def-list dd {
+      margin-left: 0;
+      margin-bottom: 0.5rem;
+    }
+    
+    /* Credit line */
+    .credit {
+      font-size: 0.85rem;
+      font-style: italic;
+      text-align: center;
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(0,0,0,0.2);
+      color: var(--ink-light);
+    }
+    
+    /* Page number */
+    .page-number {
+      text-align: center;
+      font-size: 0.9rem;
+      margin-top: 2rem;
+      font-style: italic;
+    }
+    
+    /* App link section */
+    .companion-app {
+      background: var(--ink);
+      color: var(--parchment);
+      padding: 1.5rem;
+      text-align: center;
+      margin: 2rem 0;
+      break-inside: avoid;
+    }
+    
+    .companion-app h3 {
+      font-family: 'Cinzel', serif;
+      color: var(--orange);
+      margin: 0 0 0.5rem;
+      letter-spacing: 0.1em;
+    }
+    
+    .companion-app p {
+      text-align: center;
+      margin-bottom: 1rem;
+      font-style: italic;
+    }
+    
+    .companion-app a {
+      display: inline-block;
+      background: var(--orange);
+      color: var(--ink);
+      padding: 0.5rem 1.5rem;
+      text-decoration: none;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-size: 0.9rem;
+    }
+    
+    .companion-app a:hover {
+      background: #e07000;
+    }
+    
+    /* Navigation */
+    .nav-footer {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 3px double var(--ink);
+      font-size: 0.9rem;
+    }
+    
+    .nav-footer a {
+      color: var(--ink);
+      text-decoration: none;
+    }
+    
+    .nav-footer a:hover {
+      text-decoration: underline;
+    }
+    
+    /* Emphasized game term */
+    em.term {
+      font-style: normal;
+      font-weight: 600;
+    }
+
+    /* Drop cap */
+    .drop-cap::first-letter {
+      float: left;
+      font-family: 'Cinzel', serif;
+      font-size: 3.5rem;
+      line-height: 0.8;
+      padding-right: 0.5rem;
+      padding-top: 0.1rem;
+      color: var(--red);
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="manual-header">
+      <h1>Thermonuclear Darts</h1>
+      <div class="subtitle">A Cricket Variant for Mutually Assured Destruction</div>
+      <div class="woda-mark">
+        <img src="../../images/fox-logo.jpg" alt="">
+        World Outdoor Darts Association
+      </div>
+    </header>
+    
+    <div class="columns">
+      <section>
+        <h2>Philosophy</h2>
+        <p class="drop-cap">In 501, your opponent is a ghost. Their score exists, but you can do nothing about it. You play against the board—against yourself, really. It is a form of zen.</p>
+        
+        <p>Cricket is different. You cannot overlook the fact that your opponent exists. The board becomes a battlefield. Territory is claimed, contested, lost. Every point drafts your emotions into play.</p>
+        
+        <p class="callout">"Points are the essence of Cricket. They add life to the game. They draft our emotions into play."<br>— Tony Payne, <em>Thermonuclear Cricket</em>, 1985</p>
+        
+        <p>Thermonuclear Darts takes this further. You are no longer merely competing for territory. You are armed.</p>
+      </section>
+      
+      <section>
+        <h2>Game Overview</h2>
+        
+        <div class="stat-block">
+          <div class="stat-block-title">Thermonuclear Darts</div>
+          <div class="stat-line">
+            <span class="stat-label">Players:</span>
+            <span class="stat-value">2-4 (Cutthroat supported)</span>
+          </div>
+          <div class="stat-line">
+            <span class="stat-label">Base Game:</span>
+            <span class="stat-value">Standard Cricket</span>
+          </div>
+          <div class="stat-line">
+            <span class="stat-label">Starting Nukes:</span>
+            <span class="stat-value">3 (locked)</span>
+          </div>
+          <div class="stat-line">
+            <span class="stat-label">Code Numbers:</span>
+            <span class="stat-value">3 random, drawn from 1-14</span>
+          </div>
+          <div class="stat-line">
+            <span class="stat-label">Bonus Nuke:</span>
+            <span class="stat-value">Awarded for consecutive code hits</span>
+          </div>
+        </div>
+        
+        <p>The game is played as standard Cricket with an additional strategic layer: the <em class="term">nuclear arsenal</em>. Each player begins with three nukes, which must be unlocked before use.</p>
+      </section>
+      
+      <section>
+        <h2>Setup</h2>
+        
+        <h3>The Code</h3>
+        <p>Before the first dart is thrown, generate a <em class="term">launch code</em>: three numbers selected at random from 1 through 14. These are non-Cricket numbers—the forgotten regions of the board. The code is the same for all players.</p>
+        
+        <p>Example codes: <strong>3 - 7 - 11</strong> or <strong>2 - 9 - 14</strong></p>
+        
+        <h3>The Arsenal</h3>
+        <p>Each player begins with three nukes in a <em class="term">locked</em> state. A locked nuke cannot be used. Players must unlock their arsenal by hitting the code.</p>
+      </section>
+      
+      <section>
+        <h2>Unlocking Nukes</h2>
+        
+        <p>To unlock your nuclear arsenal, you must hit all three code numbers in order. The following rules apply:</p>
+        
+        <dl class="def-list">
+          <dt>Called Shots Only</dt>
+          <dd>You must verbally declare when you are shooting for a code number. "Going for the 7" or similar.</dd>
+          
+          <dt>Sequential</dt>
+          <dd>Code numbers must be hit in order. If the code is 3-7-11, you cannot hit the 7 until you have hit the 3.</dd>
+          
+          <dt>Squirrelies Don't Count</dt>
+          <dd>A <em class="term">squirrely</em> is a dart that accidentally hits a number you did not call. Squirrelies count for Cricket scoring but do NOT count toward code progress. You must hit what you call.</dd>
+          
+          <dt>Consecutive Bonus</dt>
+          <dd>If you hit all three code numbers with three consecutive darts (no misses, no squirrelies between), you are awarded a <em class="term">bonus fourth nuke</em>.</dd>
+        </dl>
+        
+        <p>Once all three code numbers have been hit, your arsenal is unlocked. You may now launch nukes at will.</p>
+      </section>
+      
+      <section>
+        <h2>Launching a Nuke</h2>
+        
+        <p>When your nukes are unlocked and you wish to deploy one, you must:</p>
+        
+        <p><strong>1.</strong> Declare: "I am using a nuke."</p>
+        <p><strong>2.</strong> Call your target number (any Cricket number: 20, 19, 18, 17, 16, 15, or Bull).</p>
+        <p><strong>3.</strong> Throw.</p>
+        
+        <h3>Nuke Effects</h3>
+        
+        <table>
+          <tr>
+            <th>Result</th>
+            <th>Effect</th>
+          </tr>
+          <tr>
+            <td><strong>Hit (Single)</strong></td>
+            <td>All opponents lose ALL marks on the target number. Closed becomes open.</td>
+          </tr>
+          <tr>
+            <td><strong>Hit (Double)</strong></td>
+            <td>Marks erased + 20 points awarded to launcher.</td>
+          </tr>
+          <tr>
+            <td><strong>Hit (Triple)</strong></td>
+            <td>FALLOUT. Marks erased + 40 points awarded to launcher.</td>
+          </tr>
+          <tr>
+            <td><strong>Miss</strong></td>
+            <td>Nuke is wasted. No effect.</td>
+          </tr>
+        </table>
+        
+        <p>A launched nuke is expended regardless of outcome. Choose your moments wisely.</p>
+      </section>
+      
+      <section>
+        <h2>Strategy Notes</h2>
+        
+        <p>The nuke layer creates a persistent tension throughout the game. Do you press your Cricket advantage, or sacrifice turns to unlock your arsenal? Do you launch early to disrupt an opponent's lead, or hold your nukes as a deterrent?</p>
+        
+        <p>In cutthroat (3-4 players), the threat of nuclear retaliation adds a diplomatic dimension. A player with unlocked nukes commands respect—and fear.</p>
+        
+        <p class="callout">A nuke unused is a nuke that could have changed the game. A nuke wasted is worse than none at all.</p>
+      </section>
+      
+      <section>
+        <h2>Thermonuclear War</h2>
+        <p><em>Rules currently being developed. When two or more players launch nukes in the same round, something terrible happens. Details forthcoming.</em></p>
+      </section>
+      
+      <div class="companion-app">
+        <h3>☢ Nuke Tracker</h3>
+        <p>Companion app for code generation and arsenal tracking.</p>
+        <a href="app/">Launch App</a>
+      </div>
+      
+      <section class="credit">
+        The Thermonuclear style of play originated with Tony Payne (Worldwide Darts, 1985). WODA built this game structure upon that philosophical foundation. Play Cricket. Respect the opponent. Bring nukes.
+      </section>
+    </div>
+    
+    <nav class="nav-footer">
+      <a href="../">← Return to WODA</a>
+      <a href="../../">Undaunted Leisure</a>
+    </nav>
+    
+    <div class="page-number">69</div>
+  </div>
+</body>
+</html>

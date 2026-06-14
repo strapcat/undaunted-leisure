@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>The Hunt for the Legendary Buck — Bullseye Quest #1</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Caveat:wght@400;700&family=Permanent+Marker&family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --parchment: #1a1510;
+      --parchment-mid: #2a2118;
+      --parchment-light: #3d3024;
+      --chalk: #d4c9b5;
+      --chalk-dim: #7a7060;
+      --chalk-bright: #f0e8d8;
+      --orange: #e85d04;
+      --orange-dark: #bc4b03;
+      --orange-glow: #f48c06;
+      --blood: #8b1a1a;
+      --blood-dim: #5a1111;
+      --forest-dark: #1a2e1a;
+      --forest: #2d4a2e;
+      --gold: #c9a227;
+      --gold-dim: #8a7020;
+      --chalkboard: #1a3328;
+      --chalkboard-border: #2a4a38;
+      --progress-height: 48px;
+      --topbar-height: 44px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html {
+      background-color: var(--parchment);
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+
+    body {
+      font-family: 'Source Serif 4', Georgia, serif;
+      background-color: var(--parchment);
+      color: var(--chalk);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+      height: 100svh;
+    }
+    @supports not (height: 100svh) { body { height: -webkit-fill-available; } }
+
+    /* Grain */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      opacity: 0.25;
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+    /* ---- TOP NAV (hidden on cover) ---- */
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; justify-content: space-between; align-items: flex-start;
+      padding-top: max(12px, env(safe-area-inset-top));
+      padding-left: max(1rem, env(safe-area-inset-left));
+      padding-right: max(1rem, env(safe-area-inset-right));
+      padding-bottom: 20px;
+      background: linear-gradient(to bottom, rgba(26,21,16,0.92) 0%, rgba(26,21,16,0.6) 50%, transparent 100%);
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      pointer-events: none;
+    }
+    .topbar.visible { opacity: 1; pointer-events: auto; }
+
+    .topbar a {
+      font-family: 'Archivo Black', Impact, sans-serif;
+      text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.1em;
+      color: var(--orange); text-decoration: none;
+      padding: 12px 4px; min-height: 44px; min-width: 44px;
+      display: inline-flex; align-items: center;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .topbar a:active { color: var(--orange-glow); }
+    @media (hover:hover) { .topbar a:hover { color: var(--orange-glow); } }
+    .topbar-label { font-family: 'Caveat', cursive; font-size: 1rem; color: var(--chalk-dim); padding: 12px 4px; }
+
+    /* ---- SCROLL CONTAINER ---- */
+    .crawl {
+      display: flex; width: 100%; height: 100%;
+      overflow-x: auto; overflow-y: hidden;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .crawl::-webkit-scrollbar { display: none; }
+
+    .panel {
+      flex: 0 0 100%; width: 100%; height: 100%;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      position: relative;
+    }
+
+    .panel-content {
+      display: flex; flex-direction: column; justify-content: center;
+      padding: calc(var(--topbar-height) + env(safe-area-inset-top) + 20px) max(1.5rem, env(safe-area-inset-left)) calc(var(--progress-height) + env(safe-area-inset-bottom) + 20px) max(1.5rem, env(safe-area-inset-right));
+      max-width: 720px; margin: 0 auto; width: 100%;
+      min-height: 100%;
+    }
+
+    /* ---- Typography ---- */
+    .panel-number {
+      font-family: 'Archivo Black', Impact, sans-serif;
+      font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--chalk-dim); margin-bottom: 0.5rem;
+    }
+    .panel-title {
+      font-family: 'Permanent Marker', cursive;
+      font-size: clamp(1.8rem, 6vw, 2.8rem);
+      color: var(--chalk-bright); line-height: 1.15; margin-bottom: 1rem;
+    }
+    .panel-subtitle {
+      font-family: 'Caveat', cursive; font-size: 1.2rem;
+      color: var(--gold); margin-bottom: 1.5rem;
+    }
+    .panel p { margin-bottom: 1rem; max-width: 55ch; font-size: 1rem; }
+    .panel strong { color: var(--chalk-bright); }
+
+    /* ---- Narrative block ---- */
+    .narrative {
+      background: var(--forest-dark);
+      border-left: 3px solid var(--forest);
+      padding: 1.25rem 1.5rem; margin: 1rem 0;
+      border-radius: 0 4px 4px 0;
+      font-style: italic; line-height: 1.8;
+    }
+    .narrative strong { color: var(--chalk-bright); font-style: normal; }
+
+    /* ---- Tables ---- */
+    .rules-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
+    .rules-table th {
+      font-family: 'Archivo Black', Impact, sans-serif;
+      text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.1em;
+      color: var(--orange); text-align: left; padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid var(--parchment-light);
+    }
+    .rules-table td {
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      vertical-align: top;
+    }
+
+    /* ---- Colors ---- */
+    .danger { color: var(--blood); }
+    .reward { color: var(--gold); }
+
+    /* ---- Turn path ---- */
+    .turn-path { display: flex; align-items: center; flex-wrap: wrap; gap: 0; margin: 1.5rem 0; }
+    .turn-node {
+      display: flex; align-items: center; justify-content: center;
+      width: 40px; height: 40px; border-radius: 50%;
+      border: 2px solid var(--orange);
+      font-family: 'Archivo Black', Impact, sans-serif; font-size: 0.75rem;
+      color: var(--orange); flex-shrink: 0;
+    }
+    .turn-node.sq { border-color: var(--gold); color: var(--gold); font-family: 'Caveat', cursive; font-size: 0.7rem; width: 36px; height: 36px; border-style: dashed; }
+    .turn-node.bull { border-color: var(--blood); color: var(--blood); }
+    .turn-arrow { color: var(--chalk-dim); margin: 0 4px; font-size: 0.8rem; }
+
+    /* ---- Chalkboard ---- */
+    .chalkboard {
+      background: var(--chalkboard); border: 2px solid var(--chalkboard-border);
+      border-radius: 4px; padding: 1rem; margin: 1rem 0;
+      font-family: 'Caveat', cursive;
+    }
+    .chalkboard table { width: 100%; border-collapse: collapse; }
+    .chalkboard th {
+      font-size: 0.85rem; color: var(--chalk-dim); padding: 0.3rem 0.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.15); text-align: center;
+    }
+    .chalkboard td {
+      text-align: center; padding: 0.3rem 0.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: 1.1rem; color: var(--chalk);
+    }
+    .chalkboard .sq-row td {
+      font-size: 0.8rem; color: var(--gold-dim); font-style: italic;
+      border-bottom: none; padding: 0.15rem 0.5rem;
+    }
+
+    /* ---- Fox tracker ---- */
+    .fox-tracker {
+      display: flex; align-items: center; flex-wrap: wrap; gap: 4px;
+      margin: 1rem 0; padding: 0.75rem; background: var(--parchment-mid);
+      border-radius: 4px; border-left: 3px solid var(--blood);
+    }
+    .fox-num {
+      width: 28px; height: 28px; border-radius: 50%;
+      border: 1.5px solid var(--chalk-dim);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Archivo Black', Impact, sans-serif;
+      font-size: 0.6rem; color: var(--chalk-dim); flex-shrink: 0;
+    }
+    .fox-num.active { border-color: var(--blood); color: var(--blood); background: rgba(139,26,26,0.15); }
+    .fox-num.dead { border-color: var(--gold); color: var(--gold); }
+
+    /* ---- Result cards ---- */
+    .result-card {
+      background: var(--parchment-mid);
+      border-left: 3px solid var(--chalk-dim);
+      padding: 0.75rem 1rem; margin: 0.5rem 0; font-size: 0.9rem;
+    }
+    .result-card.death { border-left-color: var(--blood); }
+    .result-card.victory { border-left-color: var(--gold); }
+    .result-card.escape { border-left-color: var(--orange); }
+    .result-card .result-label {
+      font-family: 'Archivo Black', Impact, sans-serif;
+      font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase;
+      margin-bottom: 0.25rem;
+    }
+    .result-card.death .result-label { color: var(--blood); }
+    .result-card.victory .result-label { color: var(--gold); }
+    .result-card.escape .result-label { color: var(--orange); }
+
+    /* ---- Yet to Be Revealed ---- */
+    .locked {
+      background: var(--parchment-mid);
+      border: 1px dashed var(--chalk-dim);
+      border-radius: 4px; padding: 1.25rem;
+      margin: 1rem 0; position: relative;
+      overflow: hidden;
+    }
+    .locked::before {
+      content: '🔒';
+      position: absolute; top: 0.75rem; right: 0.75rem;
+      font-size: 1rem;
+    }
+    .locked-title {
+      font-family: 'Archivo Black', Impact, sans-serif;
+      font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--chalk-dim); margin-bottom: 0.5rem;
+    }
+    .locked p {
+      font-style: italic; color: var(--chalk-dim); font-size: 0.9rem;
+      max-width: 50ch;
+    }
+
+    /* ---- Victory tiers ---- */
+    .tier {
+      display: flex; align-items: flex-start; gap: 0.75rem;
+      margin: 0.75rem 0; padding: 0.75rem;
+      background: var(--parchment-mid); border-radius: 4px;
+    }
+    .tier-icon { font-size: 1.4rem; flex-shrink: 0; width: 28px; text-align: center; }
+    .tier-name {
+      font-family: 'Archivo Black', Impact, sans-serif;
+      font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .tier-desc { font-size: 0.9rem; color: var(--chalk); margin-top: 0.15rem; }
+    .tier-ending { font-family: 'Caveat', cursive; font-size: 0.95rem; color: var(--gold); }
+    .tier.legendary { border-left: 3px solid var(--gold); }
+    .tier.great { border-left: 3px solid var(--orange); }
+    .tier.good { border-left: 3px solid var(--chalk-dim); }
+    .tier.shame { border-left: 3px solid var(--blood-dim); }
+    .tier.defeat { border-left: 3px solid var(--blood); }
+
+    /* ---- Scenario ---- */
+    .scenario {
+      background: var(--parchment-mid); border: 1px solid var(--parchment-light);
+      padding: 1.25rem; margin: 1rem 0; border-radius: 4px;
+    }
+    .scenario-question {
+      font-family: 'Source Serif 4', serif; font-weight: 600;
+      font-size: 1rem; color: var(--chalk-bright); margin-bottom: 0.75rem;
+    }
+    .scenario-setup { font-size: 0.9rem; margin-bottom: 1rem; }
+    .scenario-btn {
+      display: inline-block; font-family: 'Archivo Black', Impact, sans-serif;
+      text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em;
+      padding: 0.75rem 1.25rem; margin: 0.25rem 0.5rem 0.25rem 0;
+      border: 2px solid var(--orange); color: var(--orange);
+      background: transparent; cursor: pointer; border-radius: 4px;
+      min-height: 44px; -webkit-tap-highlight-color: transparent;
+      transition: all 0.2s ease;
+    }
+    .scenario-btn:active, .scenario-btn.selected { background: var(--orange); color: var(--parchment); }
+    @media (hover:hover) { .scenario-btn:hover { background: var(--orange); color: var(--parchment); } }
+    .scenario-outcome {
+      display: none; margin-top: 1rem; padding: 1rem;
+      background: var(--parchment); border-radius: 4px;
+      font-style: italic; line-height: 1.7;
+    }
+    .scenario-outcome.visible { display: block; }
+
+    /* ---- Bizarro link ---- */
+    .bizarro-link {
+      color: var(--orange); text-decoration: none;
+      border-bottom: 1px dashed var(--orange);
+      transition: color 0.2s;
+    }
+    .bizarro-link:active { color: var(--orange-glow); }
+
+    /* ============ COVER PANEL ============ */
+    .panel--cover { overflow: hidden; }
+    .panel--cover .panel-content { padding: 0; max-width: none; }
+
+    .cover-layout { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+    .cover-art-wrapper { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+
+    .cover-art {
+      display: block;
+      max-height: calc(100svh - 24px);
+      max-width: 100%; width: auto; height: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 24px rgba(0,0,0,0.5)) brightness(1.1) contrast(1.05);
+      z-index: 1001;
+      animation: coverReveal 1s ease-out forwards;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+    }
+    @supports not (max-height:100svh) { .cover-art { max-height: calc(100vh - 24px); } }
+    @keyframes coverReveal { from { opacity:0; transform:scale(0.97); } to { opacity:1; transform:scale(1); } }
+
+    .cover-art.fading { opacity: 0; }
+
+    .scroll-hint-cover {
+      position: absolute; bottom: max(24px, env(safe-area-inset-bottom));
+      left: 50%; transform: translateX(-50%); z-index: 1002;
+      font-family: 'Caveat', cursive; font-size: 1rem;
+      color: var(--chalk-dim);
+      animation: hintPulse 2.5s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes hintPulse {
+      0%,100% { opacity:0.5; transform:translateX(-50%); }
+      50% { opacity:0.9; transform:translateX(-50%) translateX(4px); }
+    }
+
+    .cover-text { display: none; }
+
+    /* ---- PROGRESS BAR (hidden on cover) ---- */
+    .progress-bar {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+      height: calc(var(--progress-height) + env(safe-area-inset-bottom));
+      padding-bottom: env(safe-area-inset-bottom);
+      padding-left: max(1rem, env(safe-area-inset-left));
+      padding-right: max(1rem, env(safe-area-inset-right));
+      display: flex; align-items: center; justify-content: space-between;
+      background: linear-gradient(to top, var(--parchment) 0%, var(--parchment) 60%, rgba(26,21,16,0.95) 80%, rgba(26,21,16,0.6) 100%);
+      opacity: 0; transition: opacity 0.5s ease; pointer-events: none;
+    }
+    .progress-bar.visible { opacity: 1; pointer-events: auto; }
+    .progress-label { font-family: 'Caveat', cursive; font-size: 0.85rem; color: var(--chalk-dim); flex-shrink: 0; }
+    .progress-dots { display: flex; align-items: center; gap: 8px; padding: 0 8px; }
+    .progress-dot {
+      width: 9px; height: 9px; border-radius: 50%;
+      border: 1.5px solid var(--chalk-dim); background: transparent;
+      cursor: pointer; transition: all 0.25s ease; position: relative;
+      -webkit-tap-highlight-color: transparent; flex-shrink: 0;
+    }
+    .progress-dot::before { content:''; position:absolute; top:-17px; left:-17px; right:-17px; bottom:-17px; }
+    .progress-dot.active { background: var(--orange); border-color: var(--orange); box-shadow: 0 0 8px rgba(232,93,4,0.4); }
+    .progress-dot:active { transform: scale(1.3); }
+
+    /* ---- Arrow hint ---- */
+    .arrow-hint {
+      position: fixed; right: max(12px, env(safe-area-inset-right)); top: 50%;
+      transform: translateY(-50%); z-index: 50;
+      font-size: 1.5rem; color: var(--chalk-dim); opacity: 0;
+      animation: arrowPulse 2s ease-in-out infinite;
+      pointer-events: none; transition: opacity 0.3s ease;
+    }
+    .arrow-hint.visible { opacity: 0.3; }
+    .arrow-hint.hidden { opacity: 0; }
+    @keyframes arrowPulse {
+      0%,100% { transform: translateY(-50%) translateX(0); }
+      50% { transform: translateY(-50%) translateX(4px); }
+    }
+
+    /* ---- DESKTOP ---- */
+    @media (min-width: 769px) {
+      .panel--cover .cover-layout { flex-direction: row; }
+      .cover-art-wrapper { flex: 0 0 50%; justify-content: flex-end; padding: 2rem; }
+      .cover-art { max-height: 94vh; filter: drop-shadow(0 8px 40px rgba(0,0,0,0.6)) brightness(1.1) contrast(1.05); }
+      .cover-text {
+        display: flex; flex-direction: column; justify-content: center;
+        flex: 0 0 50%; padding: 4rem;
+        animation: textSlideIn 0.8s ease-out 0.3s forwards; opacity: 0;
+      }
+      @keyframes textSlideIn { from { opacity:0; transform:translateX(30px); } to { opacity:1; transform:translateX(0); } }
+      .cover-text .eyebrow { font-family:'Archivo Black',sans-serif; text-transform:uppercase; letter-spacing:0.15em; font-size:0.75rem; color:var(--orange); margin-bottom:1rem; }
+      .cover-text h1 { font-family:'Permanent Marker',cursive; font-size:clamp(2.5rem,4.5vw,4rem); color:var(--chalk-bright); line-height:1.1; margin-bottom:0.5rem; }
+      .cover-text .subtitle { font-family:'Caveat',cursive; font-size:clamp(1.1rem,1.8vw,1.4rem); color:var(--gold); margin-bottom:2rem; }
+      .cover-text .description { font-size:1.05rem; max-width:36ch; line-height:1.7; margin-bottom:2.5rem; color:var(--chalk); }
+      .cover-text .cta { font-family:'Caveat',cursive; font-size:1.2rem; color:var(--orange); animation:hintPulse 2.5s ease-in-out infinite; }
+      .scroll-hint-cover { display: none; }
+      .panel-content { max-width: 800px; }
+    }
+    @media (min-width:1200px) {
+      .cover-art-wrapper { flex:0 0 45%; padding: 2rem 2rem 2rem 4rem; }
+      .cover-text { flex:0 0 55%; padding: 4rem 6rem; }
+    }
+
+    @media (max-width: 375px) {
+      .progress-dots { gap: 5px; }
+      .progress-dot { width: 7px; height: 7px; }
+      .progress-label { font-size: 0.7rem; }
+      .panel-title { font-size: 1.5rem; }
+      .turn-node { width: 34px; height: 34px; font-size: 0.65rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,*::before,*::after { animation-duration:0.01ms!important; transition-duration:0.01ms!important; }
+      .cover-art,.cover-text { opacity:1; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="topbar" id="topbar">
+    <a href="/woda/">← WODA</a>
+    <span class="topbar-label">Bullseye Quest #1</span>
+  </nav>
+  <span class="arrow-hint" id="arrowHint">›</span>
+
+  <div class="crawl" id="crawl">
+
+    <!-- ======== PANEL 0: COVER ======== -->
+    <section class="panel panel--cover" data-label="Cover">
+      <div class="panel-content">
+        <div class="cover-layout">
+          <div class="cover-art-wrapper">
+            <img src="../../../images/legendary-buck-cover.png"
+              alt="The Hunt for the Legendary Buck — Bullseye Quest #1"
+              class="cover-art" id="coverArt" loading="eager" fetchpriority="high">
+          </div>
+          <div class="cover-text">
+            <p class="eyebrow">A WODA Game</p>
+            <h1>Bullseye Quest</h1>
+            <p class="subtitle">#1 — The Hunt for the Legendary Buck</p>
+            <p class="description">A tabletop RPG played on the dartboard. Chalk scores. Voice narrates. Legends are made.</p>
+            <p class="cta">Scroll to begin the quest →</p>
+          </div>
+        </div>
+      </div>
+      <span class="scroll-hint-cover">Swipe to begin →</span>
+    </section>
+
+    <!-- ======== PANEL 1: THE QUEST ======== -->
+    <section class="panel" data-label="The Quest">
+      <div class="panel-content">
+        <p class="panel-number">I</p>
+        <h2 class="panel-title">The Quest</h2>
+        <div class="narrative">
+          <p>King Donut has sent Sir Staples and the Dart Knights out for food for the feast. He expects they return with enough meat to feed the dart community for the celebration.</p>
+          <p>The woods outside the castle have many dangers including a <strong>sneaky rabid fox</strong> who lurks about. The Dart Knights set out on their long journey but lo and behold become easily distracted. They see hoof prints of the elusive <strong>Legendary Buck</strong>.</p>
+          <p>King Donut would surely be pleased with the buck as a trophy, but this distracts them from their main quest.</p>
+        </div>
+        <p style="font-style:italic; color:var(--gold); font-size:1.1rem; line-height:1.9; margin-top:1rem;">
+          Will the Dart Knights return alive?<br>
+          Will they return with meat for the feast?<br>
+          And will they capture the Legendary Buck?
+        </p>
+      </div>
+    </section>
+
+    <!-- ======== PANEL 2: YOUR PARTY ======== -->
+    <section class="panel" data-label="Your Party">
+      <div class="panel-content">
+        <p class="panel-number">II</p>
+        <h2 class="panel-title">Your Party</h2>
+        <p class="panel-subtitle">How many knights answer the call?</p>
+        <table class="rules-table">
+          <tr><th>Players</th><th>Darts</th><th>Turns Each</th></tr>
+          <tr><td><strong>2</strong></td><td>6 darts</td><td>2 turns</td></tr>
+          <tr><td><strong>3</strong></td><td>3 darts</td><td>1 turn</td></tr>
+          <tr><td><strong>4</strong></td><td>3 darts</td><td>1 turn</td></tr>
+        </table>
+        <p style="margin-top:1.5rem;"><strong>Game Modes</strong></p>
+        <p><strong class="reward">Full Camaraderie</strong> — Solo or co-op. One party, one quest.</p>
+        <p><strong class="reward">Team vs Team</strong> — 2–4 per team, parallel quests on separate boards.</p>
+        <p><strong class="reward">Head to Head</strong> — 1v1 or 2v2, straight up.</p>
+        <p style="margin-top:1rem; font-size:0.9rem; color:var(--chalk-dim);">Players decide throwing order by Dart House Rules.</p>
+      </div>
+    </section>
+
+    <!-- ======== PANEL 3: THE PATH ======== -->
+    <section class="panel" data-label="The Path">
+      <div class="panel-content">
+        <p class="panel-number">III</p>
+        <h2 class="panel-title">The Path</h2>
+        <p class="panel-subtitle">One turn per number. No going back.</p>
+        <p>The quest follows the path of Cricket — one number at a time, in order:</p>
+        <div class="turn-path">
+          <div class="turn-node">20</div><span class="turn-arrow">→</span>
+          <div class="turn-node">19</div><span class="turn-arrow">→</span>
+          <div class="turn-node sq">SQ?</div><span class="turn-arrow">→</span>
+          <div class="turn-node">18</div><span class="turn-arrow">→</span>
+          <div class="turn-node">17</div><span class="turn-arrow">→</span>
+          <div class="turn-node sq">SQ?</div><span class="turn-arrow">→</span>
+          <div class="turn-node">16</div><span class="turn-arrow">→</span>
+          <div class="turn-node">15</div><span class="turn-arrow">→</span>
+          <div class="turn-node sq">SQ?</div><span class="turn-arrow">→</span>
+          <div class="turn-node bull">B</div>
+        </div>
+        <p style="font-size:0.9rem; color:var(--chalk-dim);">Side quest windows open after 19, after 17, and after 15. The party decides: press on or take the detour?</p>
+      </div>
+    </section>
+
+    <!-- ======== PANEL 4: SCOREBOARD ======== -->
+    <section class="panel" data-label="Scoreboard">
+      <div class="panel-content">
+        <p class="panel-number">IV</p>
+        <h2 class="panel-title">The Scoreboard</h2>
+        <p class="panel-subtitle">Draw this on your chalkboard</p>
+        <div class="chalkboard">
+          <table>
+            <tr><th>Meat</th><th>Marks</th><th>#</th><th>Clues</th><th>RF</th></tr>
+            <tr><td></td><td></td><td>20</td><td></td><td></td></tr>
+            <tr><td></td><td></td><td>19</td><td></td><td></td></tr>
+            <tr class="sq-row"><td colspan="5">— side quest? —</td></tr>
+            <tr><td></td><td></td><td>18</td><td></td><td></td></tr>
+            <tr><td></td><td></td><td>17</td><td></td><td></td></tr>
+            <tr class="sq-row"><td colspan="5">— side quest? —</td></tr>
+            <tr><td></td><td></td><td>16</td><td></td><td></td></tr>
+            <tr><td></td><td></td><td>15</td><td></td><td></td></tr>
+            <tr class="sq-row"><td colspan="5">— side quest? —</td></tr>
+            <tr><td style="font-size:0.75rem; color:var(--chalk-dim);">no meat</td><td></td><td>B</td><td></td><td></td></tr>
+          </table>
+        </div>
+        <p style="font-size:0.9rem;"><strong>Meat</strong> — lbs earned for the feast. <strong>Marks</strong> — cricket marks (/, X, Ø). <strong>Clues</strong> — side quest closes on 6 & 11. <strong>RF</strong> — where the Rabid Fox sits on the tracker.</p>
+      </div>
+    </section>
+
+    <!-- ======== PANEL 5: MEAT SCORING ======== -->
+    <section class="panel" data-label="Hunting">
+      <div class="panel-content">
+        <p class="panel-number">V</p>
+        <h2 class="panel-title">Hunting</h2>
+        <p class="panel-subtitle" style="font-size:1.3rem;">Close a number to start banking meat. Every extra hit feeds the feast.</p>
+        <p>Hit a number <strong>3 times</strong> to close it (doubles count as 2, triples as 3). Once closed, every additional hit earns meat equal to the number's value.</p>
+        <table class="rules-table">
+          <tr><th>Number</th><th>Meat per Extra Hit</th></tr>
+          <tr><td><strong>20</strong></td><td>+20 lbs</td></tr>
+          <tr><td><strong>19</strong></td><td>+19 lbs</td></tr>
+          <tr><td><strong>18</strong></td><td>+18 lbs</td></tr>
+          <tr><td><strong>17</strong></td><td>+17 lbs</td></tr>
+          <tr><td><strong>16</strong></td><td>+16 lbs</td></tr>
+          <tr><td><strong>15</strong></td><td>+15 lbs</td></tr>
+        </table>
+        <p style="font-size:0.9rem; margin-top:1rem;">Bullseye is <strong>NOT</strong> used for meat — it's reserved for the Legendary Buck shootoff.</p>
+      </div>
+    </section>
+
+    <!-- ======== PANEL 6: THE RABID FOX ======== -->
+    <section class="panel" data-label="The Fox">
+      <div class="panel-content">
+        <p class="panel-number">VI</p>
+        <h2 class="panel-title" style="color:var(--blood);">The Rabid Fox</h2>
+        <p class="panel-subtitle" style="color:var(--blood);">Miss the board entirely? You've attracted the fox.</p>
+        <p>Any time a player throws a <strong>donut</strong> — all darts miss the active number with zero marks — the fox spawns. Immediately. One bad turn brings her out of the shadows.</p>
+
+        <p style="margin-top:1.5rem;"><strong>The Fox Tracker</strong></p>
+        <p>The fox doesn't die easily. She's hunted across the entire board. When she spawns, you throw <strong>3 darts</strong> starting from her current position on the tracker:</p>
+        <div class="fox-tracker">
+          <div class="fox-num active">1</div>
+          <div class="fox-num">2</div>
+          <div class="fox-num">3</div>
+          <div class="fox-num">4</div>
+          <div class="fox-num">5</div>
+          <div class="fox-num">6</div>
+          <div class="fox-num">7</div>
+          <div class="fox-num">8</div>
+          <div class="fox-num">9</div>
+          <div class="fox-num">10</div>
+          <div class="fox-num">11</div>
+          <div class="fox-num">12</div>
+          <div class="fox-num">13</div>
+          <div class="fox-num">14</div>
+          <div class="fox-num">15</div>
+          <div class="fox-num">16</div>
+          <div class="fox-num">17</div>
+          <div class="fox-num">18</div>
+          <div class="fox-num">19</div>
+          <div class="fox-num">20</div>
+          <div class="fox-num dead">B</div>
+        </div>
+        <p style="font-size:0.9rem; color:var(--chalk-dim);">The fox's position persists between encounters. Mark her current number in the <strong>RF</strong> column.</p>
+
+        <div class="result-card death" style="margin-top:1rem;">
+          <p class="result-label">0 of 3 Hits — Death</p>
+          <p>The fox kills the knight. They're down — awaiting a saving throw.</p>
+        </div>
+        <div class="result-card escape">
+          <p class="result-label">1 of 3 Hits — Fox Escapes</p>
+          <p>Fox retreats. <strong class="danger">−10 meat.</strong> Tracker advances 1. Mark new position on RF.</p>
+        </div>
+        <div class="result-card">
+          <p class="result-label">2 of 3 Hits — Fox Escapes</p>
+          <p>Fox retreats. <strong>No meat penalty.</strong> Tracker advances 2.</p>
+        </div>
+        <div class="result-card victory">
+          <p class="result-label">3 of 3 Hits — Magic Darts ✦</p>
+          <p>Fox killed instantly. <strong class="reward">+50 meat.</strong> The party earns Magic Darts.</p>
+        </div>
+        <div class="result-card victory" style="margin-top:0.5rem;">
+          <p class="result-label">The Grind — Tracker reaches 20</p>
+          <p>Push the fox to 20 through multiple encounters. Finish her with a bullseye shot. <strong class="reward">+100 meat.</strong></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======== PANEL 7: DEATH & MYSTERY ======== -->
+    <section class="panel" data-label="Fate">
+      <div class="panel-content">
+        <p class="panel-number">VII</p>
+        <h2 class="panel-title">The Fallen Knight</h2>
+        <p class="panel-subtitle">Down — but not necessarily out</p>
+        <p>When the fox kills a knight, that player is down. But on each of their turns, they get one chance to crawl back into the fight.</p>
+
+        <div class="locked">
+          <p class="locked-title">Yet to Be Revealed — Saving Throw</p>
+          <p>The exact mechanics of the Saving Throw are still being forged in WODA Labs. How hard is it to cheat death? The answers are coming.</p>
+        </div>
+
+        <div class="locked">
+          <p class="locked-title">Yet to Be Revealed — Resurrection Throw</p>
+          <p>Whispers speak of a Resurrection Throw — a way for a living knight to bring back a fallen companion. But the ritual's details remain hidden. WODA Labs is still testing the incantation.</p>
+        </div>
+
+        <div class="locked">
+          <p class="locked-title">Yet to Be Revealed — Magic Darts Reward</p>
+          <p>The fox is dead, and something glows where she fell. What power do Magic Darts grant beyond the +50 meat? WODA Labs is still deciding what treasure the fox guards.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======== PANEL 8: SIDE QUESTS ======== -->
+    <section class="panel" data-label="Side Quests">
+      <div class="panel-content">
+        <p class="panel-number">VIII</p>
+        <h2 class="panel-title">Side Quests</h2>
+        <p class="panel-subtitle">The Buck's tracks lead off the main path. Follow them — if you can afford the detour.</p>
+        <p>At three points on the quest (after 19, after 17, after 15), the party can pursue side quests. This is a group decision.</p>
+        <p><strong>Cost:</strong> 10 meat per player. Spent whether you succeed or not.</p>
+        <p><strong>Targets:</strong> The side quest numbers are <strong>6</strong> and <strong>11</strong>. Players rotate throwing at these targets.</p>
+        <p style="margin-top:1rem;"><strong class="reward">Unlocking the Legendary Buck</strong></p>
+        <p>Close <strong>both 6 and 11</strong> (3 marks each) to unlock the Buck at the end of the quest. If either number remains open — no Buck attempt.</p>
+        <p><strong>Bonus:</strong> Each additional close beyond the initial 3 marks on either number <strong>reduces the bullseyes needed</strong> to kill the Buck by one.</p>
+        <p style="margin-top:1rem; font-size:0.9rem; color:var(--chalk-dim);">Track closes in the <strong>Clues</strong> column using standard cricket marks. First circle = 6 closed. Second circle = 11 closed. Anything beyond = bullseye discount.</p>
+      </div>
+    </section>
+
+    <!-- ======== PANEL 9: THE LEGENDARY BUCK ======== -->
+    <section class="panel" data-label="The Buck">
+      <div class="panel-content">
+        <p class="panel-number">IX</p>
+        <h2 class="panel-title" style="color:var(--gold);">The Legendary Buck</h2>
+        <p class="panel-subtitle">You've tracked it. You've earned the right. Now close the Bull to claim the legend.</p>
+        <p><strong>Unlock:</strong> Both 6 AND 11 must be closed from side quests.</p>
+        <p><strong>The shootoff:</strong> The party throws at Bullseye. 3 hits to kill the Buck (outer bull = 1, inner bull = 2).</p>
+        <p><strong>Reduced difficulty:</strong> Each extra close from side quests beyond the unlock reduces bullseyes needed by one.</p>
+        <p style="margin-top:1rem;"><strong class="reward">Buying Extra Throws</strong></p>
+        <p>The party can spend <strong>20 meat</strong> to purchase one additional bull throw. Group decision — everyone agrees or it doesn't happen. Repeatable as long as you have meat to spend.</p>
+        <p style="font-size:0.9rem; color:var(--chalk-dim); margin-top:0.5rem;">⚠️ The 20 meat cost is currently in playtesting.</p>
+        <p style="margin-top:1rem; font-style:italic; color:var(--chalk-dim);">Every pound of meat is now currency. Spending it to kill the Buck might drop your victory tier. The feast gets smaller, but the trophy gets closer.</p>
+      </div>
+    </section>
+
+    <!-- ======== PANEL 10: VICTORY ======== -->
+    <section class="panel" data-label="Victory">
+      <div class="panel-content">
+        <p class="panel-number">X</p>
+        <h2 class="panel-title">Victory</h2>
+        <p class="panel-subtitle">How the quest ends</p>
+
+        <div class="tier legendary">
+          <span class="tier-icon">👑</span>
+          <div><p class="tier-name reward">Legendary</p><p class="tier-desc">250+ meat AND killed the Legendary Buck</p><p class="tier-ending">"Sir Staples Ascends"</p></div>
+        </div>
+        <div class="tier great">
+          <span class="tier-icon">⭐</span>
+          <div><p class="tier-name" style="color:var(--orange);">Great</p><p class="tier-desc">Survived with 250+ meat</p><p class="tier-ending">"Songs Are Sung"</p></div>
+        </div>
+        <div class="tier good">
+          <span class="tier-icon">✅</span>
+          <div><p class="tier-name">Good</p><p class="tier-desc">Survived with 150–249 meat</p><p class="tier-ending">"Heroes of the Hour"</p></div>
+        </div>
+        <div class="tier shame">
+          <span class="tier-icon">😔</span>
+          <div><p class="tier-name" style="color:var(--blood-dim);">Shame</p><p class="tier-desc">Survived with less than 150 meat</p><p class="tier-ending">"The Long Walk Home"</p></div>
+        </div>
+        <div class="tier defeat">
+          <span class="tier-icon">💀</span>
+          <div><p class="tier-name danger">Defeat</p><p class="tier-desc">The party fell to the fox</p><p class="tier-ending">"The Hunt Ends Here"</p></div>
+        </div>
+
+        <p style="margin-top:1.5rem;"><strong>Team vs Team</strong></p>
+        <p>The winning party is welcomed at King Donut's feast. The losing party is cast off to <a href="/woda/bizarro/" class="bizarro-link">Bizarro Land</a>.</p>
+
+        <p style="margin-top:1.5rem; font-style:italic; color:var(--gold); font-size:1.05rem; line-height:1.9;">
+          Will the Dart Knights return alive?<br>
+          Will they return with meat for the feast?<br>
+          And will they capture the Legendary Buck?
+        </p>
+      </div>
+    </section>
+
+    <!-- ======== PANEL 11: THE DECISION ======== -->
+    <section class="panel" data-label="The Decision">
+      <div class="panel-content">
+        <p class="panel-number">XI</p>
+        <h2 class="panel-title">The Decision</h2>
+        <div class="scenario">
+          <p class="scenario-question">What Do You Do?</p>
+          <div class="scenario-setup">
+            <p>It's the last side quest window. Here's where you stand:</p>
+            <p>• 2 players still standing, 1 fallen knight<br>
+            • 6 is closed. 11 has 2 marks.<br>
+            • 210 lbs of meat in the stores<br>
+            • Fox tracker is on number 14<br>
+            • Side quest will cost 20 meat (10 per living player)</p>
+            <p style="margin-top:0.75rem;"><em>Do you enter the side quest to try to close 11 and unlock the Buck? Or press on, save your meat, and aim for a "Great" ending without the legendary trophy?</em></p>
+          </div>
+          <button class="scenario-btn" onclick="showOutcome('go')">Take the Side Quest</button>
+          <button class="scenario-btn" onclick="showOutcome('pass')">Press On</button>
+          <div class="scenario-outcome" id="outcome-go">
+            <p><strong class="reward">You go in.</strong> 210 → 190 meat. Your two standing knights rotate throws at 11. First knight hits two 11s — that's the close. 11 is shut. Both circles on the clues column. The Legendary Buck is unlocked.</p>
+            <p style="margin-top:0.5rem;">You press on to 15, then Bull. With 190 meat you're sitting at "Good" tier — but with the Buck unlocked, you've got a shot at Legendary. One bullseye away from the story everyone retells.</p>
+          </div>
+          <div class="scenario-outcome" id="outcome-pass">
+            <p><strong>You press on.</strong> 210 meat stays intact. You clear 15, reach Bull. No Buck attempt — 11 never closed. But your meat stores are strong. You finish at 230 lbs after the final segments.</p>
+            <p style="margin-top:0.5rem;">Good tier. The feast is full. King Donut nods approvingly. But Sir Staples glances back toward the forest, where the Buck's tracks fade into the mist. The legend lives on — uncaught.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /crawl -->
+
+  <nav class="progress-bar" id="progressBar" aria-label="Quest progress">
+    <span class="progress-label">Begin</span>
+    <div class="progress-dots" id="progressDots">
+      <button class="progress-dot active" data-index="0" aria-label="Cover"></button>
+      <button class="progress-dot" data-index="1" aria-label="The Quest"></button>
+      <button class="progress-dot" data-index="2" aria-label="Your Party"></button>
+      <button class="progress-dot" data-index="3" aria-label="The Path"></button>
+      <button class="progress-dot" data-index="4" aria-label="Scoreboard"></button>
+      <button class="progress-dot" data-index="5" aria-label="Hunting"></button>
+      <button class="progress-dot" data-index="6" aria-label="The Fox"></button>
+      <button class="progress-dot" data-index="7" aria-label="Fate"></button>
+      <button class="progress-dot" data-index="8" aria-label="Side Quests"></button>
+      <button class="progress-dot" data-index="9" aria-label="The Buck"></button>
+      <button class="progress-dot" data-index="10" aria-label="Victory"></button>
+      <button class="progress-dot" data-index="11" aria-label="The Decision"></button>
+    </div>
+    <span class="progress-label">The Buck</span>
+  </nav>
+
+  <script>
+    const crawl = document.getElementById('crawl');
+    const dots = document.querySelectorAll('.progress-dot');
+    const arrowHint = document.getElementById('arrowHint');
+    const topbar = document.getElementById('topbar');
+    const progressBar = document.getElementById('progressBar');
+    const coverArt = document.getElementById('coverArt');
+    const panels = document.querySelectorAll('.panel');
+    const totalPanels = panels.length;
+    let currentPanel = 0;
+
+    function updateProgress() {
+      const scrollLeft = crawl.scrollLeft;
+      const panelWidth = crawl.offsetWidth;
+      const newPanel = Math.round(scrollLeft / panelWidth);
+
+      if (newPanel !== currentPanel || currentPanel === 0) {
+        currentPanel = Math.max(0, Math.min(newPanel, totalPanels - 1));
+        dots.forEach((d, i) => d.classList.toggle('active', i === currentPanel));
+
+        // Cover panel: hide UI, show full art
+        if (currentPanel === 0) {
+          topbar.classList.remove('visible');
+          progressBar.classList.remove('visible');
+          arrowHint.classList.remove('visible');
+          coverArt.classList.remove('fading');
+        } else {
+          topbar.classList.add('visible');
+          progressBar.classList.add('visible');
+          arrowHint.classList.add('visible');
+          coverArt.classList.add('fading');
+        }
+
+        // Hide arrow on last panel
+        if (currentPanel >= totalPanels - 1) {
+          arrowHint.classList.add('hidden');
+        } else {
+          arrowHint.classList.remove('hidden');
+        }
+      }
+    }
+
+    crawl.addEventListener('scroll', updateProgress, { passive: true });
+
+    // Click dots to nav
+    dots.forEach(dot => {
+      dot.addEventListener('click', () => {
+        crawl.scrollTo({ left: parseInt(dot.dataset.index) * crawl.offsetWidth, behavior: 'smooth' });
+      });
+    });
+
+    // Keyboard
+    document.addEventListener('keydown', (e) => {
+      const pw = crawl.offsetWidth;
+      if (e.key === 'ArrowRight' && currentPanel < totalPanels - 1) crawl.scrollTo({ left: (currentPanel+1)*pw, behavior:'smooth' });
+      if (e.key === 'ArrowLeft' && currentPanel > 0) crawl.scrollTo({ left: (currentPanel-1)*pw, behavior:'smooth' });
+    });
+
+    // Mouse wheel → horizontal
+    crawl.addEventListener('wheel', (e) => {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        e.preventDefault();
+        const pw = crawl.offsetWidth;
+        if (e.deltaY > 0 && currentPanel < totalPanels - 1) crawl.scrollTo({ left: (currentPanel+1)*pw, behavior:'smooth' });
+        else if (e.deltaY < 0 && currentPanel > 0) crawl.scrollTo({ left: (currentPanel-1)*pw, behavior:'smooth' });
+      }
+    }, { passive: false });
+
+    // Scenario outcomes
+    function showOutcome(choice) {
+      document.getElementById('outcome-go').classList.toggle('visible', choice === 'go');
+      document.getElementById('outcome-pass').classList.toggle('visible', choice === 'pass');
+      document.querySelectorAll('.scenario-btn').forEach(b => {
+        b.classList.toggle('selected', b.textContent.toLowerCase().includes(choice === 'go' ? 'take' : 'press'));
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>WODA — World Outdoor Darts Association</title>
+  <link rel="stylesheet" href="../styles.css">
+  <meta name="description" content="The world of outdoor darts exists parallel to reality — until it swerves into the real game in the most unexpected moments.">
+  <style>
+    /* The Vortex Portal */
+    .vortex-portal {
+      position: fixed;
+      top: max(20px, env(safe-area-inset-top));
+      right: max(20px, env(safe-area-inset-right));
+      width: 60px;
+      height: 60px;
+      cursor: pointer;
+      z-index: 1000;
+      opacity: 0.3;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    @media (hover: hover) {
+      .vortex-portal:hover {
+        opacity: 0.8;
+        transform: scale(1.1);
+      }
+      
+      .vortex-portal:hover .vortex-spiral {
+        animation-duration: 1s;
+      }
+    }
+    
+    .vortex-portal:active {
+      opacity: 0.8;
+      transform: scale(1.1);
+    }
+    
+    .vortex-spiral {
+      width: 100%;
+      height: 100%;
+      animation: spin 8s linear infinite;
+    }
+    
+    .vortex-spiral path {
+      fill: none;
+      stroke: var(--orange);
+      stroke-width: 3;
+      stroke-linecap: round;
+    }
+    
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    
+    /* ==================== */
+    /* EXIT TRANSITION (to Bizarro) */
+    /* ==================== */
+    
+    .exit-fog {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 9999;
+      pointer-events: none;
+      overflow: hidden;
+      visibility: hidden;
+    }
+    
+    body.transitioning .exit-fog {
+      visibility: visible;
+    }
+    
+    .fog-layer {
+      position: absolute;
+      width: 400%;
+      height: 120%;
+      left: -150%;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(232, 93, 4, 0.7) 10%,
+        rgba(232, 93, 4, 0.95) 25%,
+        rgba(232, 93, 4, 1) 40%,
+        rgba(232, 93, 4, 1) 60%,
+        rgba(232, 93, 4, 0.95) 75%,
+        rgba(232, 93, 4, 0.7) 90%,
+        transparent 100%
+      );
+      filter: blur(80px);
+      opacity: 0;
+    }
+    
+    body.transitioning .fog-layer {
+      animation: fog-exit 5s ease-in-out forwards;
+    }
+    
+    .fog-layer:nth-child(1) { top: -30%; height: 60%; animation-delay: 0s; }
+    .fog-layer:nth-child(2) { top: 0%; height: 70%; animation-delay: 0.15s; }
+    .fog-layer:nth-child(3) { top: 20%; height: 65%; animation-delay: 0.3s; }
+    .fog-layer:nth-child(4) { top: 40%; height: 70%; animation-delay: 0.1s; }
+    .fog-layer:nth-child(5) { top: 60%; height: 60%; animation-delay: 0.25s; }
+    .fog-layer:nth-child(6) { top: 80%; height: 50%; animation-delay: 0.2s; }
+    
+    @keyframes fog-exit {
+      0% {
+        transform: translateX(0%);
+        opacity: 0;
+      }
+      25% {
+        opacity: 0.8;
+      }
+      50% {
+        transform: translateX(25%);
+        opacity: 1;
+      }
+      75% {
+        opacity: 1;
+      }
+      100% {
+        transform: translateX(50%);
+        opacity: 1;
+      }
+    }
+    
+    /* Coming soon badge */
+    .coming-soon {
+      font-size: 0.6rem;
+      background: var(--orange);
+      color: var(--black);
+      padding: 0.2rem 0.4rem;
+      border-radius: 2px;
+      margin-left: 0.5rem;
+      vertical-align: middle;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+<body>
+  <!-- Exit fog (to Bizarro) -->
+  <div class="exit-fog">
+    <div class="fog-layer"></div>
+    <div class="fog-layer"></div>
+    <div class="fog-layer"></div>
+    <div class="fog-layer"></div>
+    <div class="fog-layer"></div>
+    <div class="fog-layer"></div>
+  </div>
+  
+  <!-- The Vortex Portal -->
+  <a href="/woda/bizarro/" class="vortex-portal" id="vortex" title="">
+    <svg class="vortex-spiral" viewBox="0 0 100 100">
+      <path d="M50 10 
+               A40 40 0 0 1 90 50 
+               A35 35 0 0 1 50 85 
+               A30 30 0 0 1 20 50 
+               A25 25 0 0 1 50 25
+               A20 20 0 0 1 70 50
+               A15 15 0 0 1 50 65
+               A10 10 0 0 1 40 50
+               A5 5 0 0 1 50 45"/>
+    </svg>
+  </a>
+
+  <main class="hero">
+    <a href="/">
+      <img src="../images/fox-logo.png" alt="The Rabid Fox" class="logo animate-in">
+    </a>
+    
+    <h1 class="animate-in">WODA</h1>
+    <p class="tagline animate-in" style="font-size: 0.9rem; letter-spacing: 0.15em; text-transform: uppercase;">World Outdoor Darts Association</p>
+    
+    <p class="tagline animate-in" style="margin-top: 2rem;">
+      The world of outdoor darts exists parallel to reality — until it swerves into the real game in the most unexpected moments.
+    </p>
+    
+    <nav class="animate-in">
+      <a href="/woda/thermonuclear/">Thermonuclear Darts</a>
+      <a href="/woda/bullseye-quest/legendary-buck/">Bullseye Quest</a>
+      <a href="#">The Manual <span class="coming-soon">Coming Soon</span></a>
+      <a href="/woda/shop/">Shop</a>
+    </nav>
+  </main>
+  
+  <footer>
+    <a href="/" style="font-family: 'Archivo Black', sans-serif; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.1em;">Undaunted Leisure</a>
+    <span style="color: rgba(255,255,255,0.3); margin: 0 1rem;">|</span>
+    <a href="https://x.com/W_O_D_A" target="_blank" rel="noopener" aria-label="Follow on X">
+      <svg class="social-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle;">
+        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+      </svg>
+    </a>
+  </footer>
+  
+  <script>
+    document.getElementById('vortex').addEventListener('click', function(e) {
+      e.preventDefault();
+      document.body.classList.add('transitioning');
+      
+      setTimeout(function() {
+        window.location.href = '/woda/bizarro/';
+      }, 2800);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Undaunted Leisure</title>
+  <link rel="stylesheet" href="styles.css">
+  <meta name="description" content="We make games for people who take play seriously.">
+  <style>
+    /* Override colors for Undaunted Leisure */
+    :root {
+      --forest: #1a3a2f;
+      --forest-light: #264d3d;
+      --forest-dark: #0f2920;
+      --gold: #c9a227;
+      --gold-light: #dbb84a;
+    }
+    
+    body {
+      background-color: var(--forest);
+    }
+    
+    html {
+      background-color: var(--forest);
+    }
+    
+    /* Adjust grain for green */
+    body::before {
+      opacity: 0.3;
+    }
+    
+    /* Hero gradient for forest */
+    .hero::after {
+      background: linear-gradient(to top, var(--forest), transparent);
+    }
+    
+    /* Gold accents instead of orange */
+    h2 {
+      color: var(--gold);
+    }
+    
+    h3 {
+      color: var(--gold-light);
+    }
+    
+    a {
+      color: var(--gold);
+    }
+    
+    @media (hover: hover) {
+      a:hover {
+        color: var(--gold-light);
+      }
+    }
+    
+    a:active {
+      color: var(--gold-light);
+    }
+    
+    .logo {
+      border-color: var(--gold);
+    }
+    
+    @media (hover: hover) {
+      .logo:hover {
+        border-color: var(--gold-light);
+      }
+    }
+    
+    @media (hover: hover) {
+      nav a:hover {
+        border-color: var(--gold);
+      }
+    }
+    
+    @media (hover: hover) {
+      .social-icon:hover {
+        fill: var(--gold);
+      }
+    }
+    
+    /* Footer styling */
+    footer {
+      border-top-color: rgba(255,255,255,0.1);
+    }
+  </style>
+</head>
+<body>
+  <main class="hero">
+    <img src="images/fox-logo.png" alt="The Rabid Fox" class="logo animate-in">
+    
+    <h1 class="animate-in">Undaunted Leisure</h1>
+    
+    <p class="tagline animate-in">Of leisure undaunted, possessing a swagger and perseverance of purpose which nothing but impossibilities could divert from our direction.</p>
+    
+    <nav class="animate-in">
+      <a href="/woda/">Enter WODA</a>
+    </nav>
+  </main>
+  
+  <footer>
+    <a href="https://x.com/W_O_D_A" target="_blank" rel="noopener" aria-label="Follow on X">
+      <svg class="social-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+      </svg>
+    </a>
+  </footer>
+</body>
+</html>
