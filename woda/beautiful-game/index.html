@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>The Beautiful Outdoor Game (of Darts) — WODA</title>
+  <meta name="description" content="Soccer, played with darts. The board is the pitch. Possession, cards, corner kicks, full time.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Caveat:wght@400;700&family=Permanent+Marker&family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --parchment: #1a1510;
+      --parchment-mid: #2a2118;
+      --parchment-light: #3d3024;
+      --chalk: #d4c9b5;
+      --chalk-dim: #7a7060;
+      --chalk-bright: #f0e8d8;
+      --orange: #e85d04;
+      --orange-dark: #bc4b03;
+      --orange-glow: #f48c06;
+      --blood: #8b1a1a;
+      --blood-dim: #5a1111;
+      --forest-dark: #1a2e1a;
+      --forest: #2d4a2e;
+      --gold: #c9a227;
+      --gold-dim: #8a7020;
+      --chalkboard: #1a3328;
+      --chalkboard-border: #2a4a38;
+      --progress-height: 48px;
+      --topbar-height: 44px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html {
+      background-color: var(--parchment);
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+
+    body {
+      font-family: 'Source Serif 4', Georgia, serif;
+      background-color: var(--parchment);
+      color: var(--chalk);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+      height: 100svh;
+    }
+    @supports not (height: 100svh) { body { height: -webkit-fill-available; } }
+
+    /* Grain */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      opacity: 0.25;
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+    /* ---- TOP NAV (hidden on cover) ---- */
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; justify-content: space-between; align-items: flex-start;
+      padding-top: max(12px, env(safe-area-inset-top));
+      padding-left: max(1rem, env(safe-area-inset-left));
+      padding-right: max(1rem, env(safe-area-inset-right));
+      padding-bottom: 20px;
+      background: linear-gradient(to bottom, rgba(26,21,16,0.92) 0%, rgba(26,21,16,0.6) 50%, transparent 100%);
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      pointer-events: none;
+    }
+    .topbar.visible { opacity: 1; pointer-events: auto; }
+
+    .topbar a {
+      font-family: 'Archivo Black', Impact, sans-serif;
+      text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.1em;
+      color: var(--orange); text-decoration: none;
+      padding: 12px 4px; min-height: 44px; min-width: 44px;
+      display: inline-flex; align-items: center;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .topbar a:active { color: var(--orange-glow); }
+    @media (hover:hover) { .topbar a:hover { color: var(--orange-glow); } }
+    .topbar-label { font-family: 'Caveat', cursive; font-size: 1rem; color: var(--chalk-dim); padding: 12px 4px; }
+
+    /* ---- SCROLL CONTAINER ---- */
+    .crawl {
+      display: flex; width: 100%; height: 100%;
+      overflow-x: auto; overflow-y: hidden;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .crawl::-webkit-scrollbar { display: none; }
+
+    .panel {
+      flex: 0 0 100%; width: 100%; height: 100%;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      position: relative;
+    }
+
+    .panel-content {
+      display: flex; flex-direction: column; justify-content: center;
+      padding: calc(var(--topbar-height) + env(safe-area-inset-top) + 20px) max(1.5rem, env(safe-area-inset-left)) calc(var(--progress-height) + env(safe-area-inset-bottom) + 20px) max(1.5rem, env(safe-area-inset-right));
+      max-width: 720px; margin: 0 auto; width: 100%;
+      min-height: 100%;
+    }
+
+    /* ---- Typography ---- */
+    .panel-number {
+      font-family: 'Archivo Black', Impact, sans-serif;
+      font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--chalk-dim); margin-bottom: 0.5rem;
+    }
+    .panel-title {
+      font-family: 'Permanent Marker', cursive;
+      font-size: clamp(1.8rem, 6vw, 2.8rem);
+      color: var(--chalk-bright); line-height: 1.15; margin-bottom: 1rem;
+    }
+    .panel-subtitle {
+      font-family: 'Caveat', cursive; font-size: 1.2rem;
+      color: var(--gold); margin-bottom: 1.5rem;
+    }
+    .panel p { margin-bottom: 1rem; max-width: 55ch; font-size: 1rem; }
+    .panel strong { color: var(--chalk-bright); }
+
+    /* ---- Narrative block ---- */
+    .narrative {
+      background: var(--forest-dark);
+      border-left: 3px solid var(--forest);
+      padding: 1.25rem 1.5rem; margin: 1rem 0;
+      border-radius: 0 4px 4px 0;
+      font-style: italic; line-height: 1.8;
+    }
+    .narrative strong { color: var(--chalk-bright); font-style: normal; }
+
+    /* ---- Tables ---- */
+    .rules-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
+    .rules-table th {
+      font-family: 'Archivo Black', Impact, sans-serif;
+      text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.1em;
+      color: var(--orange); text-align: left; padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid var(--parchment-light);
+    }
+    .rules-table td {
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      vertical-align: top;
+    }
+
+    /* ---- Colors ---- */
+    .danger { color: var(--blood); }
+    .reward { color: var(--gold); }
+
+    /* ---- Lane path (possession lanes) ---- */
+    .turn-path { display: flex; align-items: center; flex-wrap: wrap; gap: 0; margin: 1rem 0; }
+    .turn-node {
+      display: flex; align-items: center; justify-content: center;
+      width: 40px; height: 40px; border-radius: 50%;
+      border: 2px solid var(--orange);
+      font-family: 'Archivo Black', Impact, sans-serif; font-size: 0.75rem;
+      color: var(--orange); flex-shrink: 0;
+    }
+    .turn-node.goal { border-color: var(--gold); color: var(--gold); }
+    .turn-node.mid { border-color: var(--blood); color: var(--blood); border-style: dashed; }
+    .turn-arrow { color: var(--chalk-dim); margin: 0 4px; font-size: 0.8rem; }
+
+    /* ---- Pitch table (possession, on chalkboard green) ---- */
+    .pitch-board {
+      background: var(--chalkboard); border: 2px solid var(--chalkboard-border);
+      border-radius: 4px; padding: 1rem; margin: 1rem 0;
+      overflow-x: auto; -webkit-overflow-scrolling: touch;
+    }
+    .pitch-board table { width: 100%; border-collapse: collapse; }
+    .pitch-board th {
+      font-family: 'Archivo Black', Impact, sans-serif;
+      text-transform: uppercase; font-size: 0.65rem; letter-spacing: 0.1em;
+      color: var(--chalk-dim); padding: 0.4rem 0.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.15); text-align: left;
+    }
+    .pitch-board td {
+      padding: 0.5rem; font-size: 0.95rem; color: var(--chalk);
+      border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: top;
+    }
+    .pitch-board td:first-child { font-family: 'Permanent Marker', cursive; color: var(--chalk-bright); white-space: nowrap; }
+    .lane { font-family: 'Caveat', cursive; font-size: 1.15rem; color: var(--chalk-bright); white-space: nowrap; }
+
+    /* ---- Result cards ---- */
+    .result-card {
+      background: var(--parchment-mid);
+      border-left: 3px solid var(--chalk-dim);
+      padding: 0.75rem 1rem; margin: 0.5rem 0; font-size: 0.9rem;
+    }
+    .result-card.death { border-left-color: var(--blood); }
+    .result-card.victory { border-left-color: var(--gold); }
+    .result-card.escape { border-left-color: var(--orange); }
+    .result-card .result-label {
+      font-family: 'Archivo Black', Impact, sans-serif;
+      font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase;
+      margin-bottom: 0.25rem;
+    }
+    .result-card.death .result-label { color: var(--blood); }
+    .result-card.victory .result-label { color: var(--gold); }
+    .result-card.escape .result-label { color: var(--orange); }
+    .result-card p { margin-bottom: 0; }
+
+    /* ---- Yet to Be Revealed ---- */
+    .locked {
+      background: var(--parchment-mid);
+      border: 1px dashed var(--chalk-dim);
+      border-radius: 4px; padding: 1.25rem;
+      margin: 1rem 0; position: relative;
+      overflow: hidden;
+    }
+    .locked::before {
+      content: '🔒';
+      position: absolute; top: 0.75rem; right: 0.75rem;
+      font-size: 1rem;
+    }
+    .locked-title {
+      font-family: 'Archivo Black', Impact, sans-serif;
+      font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--chalk-dim); margin-bottom: 0.5rem;
+    }
+    .locked p {
+      font-style: italic; color: var(--chalk-dim); font-size: 0.9rem;
+      max-width: 50ch;
+    }
+
+    /* ---- Scenario ---- */
+    .scenario {
+      background: var(--parchment-mid); border: 1px solid var(--parchment-light);
+      padding: 1.25rem; margin: 1rem 0; border-radius: 4px;
+    }
+    .scenario-question {
+      font-family: 'Source Serif 4', serif; font-weight: 600;
+      font-size: 1rem; color: var(--chalk-bright); margin-bottom: 0.75rem;
+    }
+    .scenario-setup { font-size: 0.9rem; margin-bottom: 1rem; }
+    .scenario-btn {
+      display: inline-block; font-family: 'Archivo Black', Impact, sans-serif;
+      text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em;
+      padding: 0.75rem 1.25rem; margin: 0.25rem 0.5rem 0.25rem 0;
+      border: 2px solid var(--orange); color: var(--orange);
+      background: transparent; cursor: pointer; border-radius: 4px;
+      min-height: 44px; -webkit-tap-highlight-color: transparent;
+      transition: all 0.2s ease;
+    }
+    .scenario-btn:active, .scenario-btn.selected { background: var(--orange); color: var(--parchment); }
+    @media (hover:hover) { .scenario-btn:hover { background: var(--orange); color: var(--parchment); } }
+    .scenario-outcome {
+      display: none; margin-top: 1rem; padding: 1rem;
+      background: var(--parchment); border-radius: 4px;
+      font-style: italic; line-height: 1.7;
+    }
+    .scenario-outcome.visible { display: block; }
+
+    /* ---- CTA panel ---- */
+    .cta-panel .panel-content { text-align: center; align-items: center; }
+    .cta-panel .panel-title { margin-bottom: 0.5rem; }
+    .cta-links { margin-top: 2rem; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+    .cta-links a {
+      font-family: 'Archivo Black', Impact, sans-serif;
+      text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.1em;
+      color: var(--orange); text-decoration: none;
+      padding: 12px 8px; min-height: 44px;
+      display: inline-flex; align-items: center;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .cta-links a:active { color: var(--orange-glow); }
+    @media (hover:hover) { .cta-links a:hover { color: var(--orange-glow); } }
+    .cta-divider { color: rgba(255,255,255,0.3); }
+    .social-icon { width: 20px; height: 20px; fill: var(--orange); }
+
+    /* ============ COVER PANEL ============ */
+    .panel--cover { overflow: hidden; }
+    .panel--cover .panel-content { padding: 0; max-width: none; }
+
+    .cover-layout { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+    .cover-art-wrapper { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+
+    .cover-frame {
+      display: flex; align-items: center; justify-content: center;
+      max-height: calc(100svh - 24px);
+      max-width: 100%;
+      z-index: 1001;
+      animation: coverReveal 1s ease-out forwards;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+    }
+    @supports not (max-height:100svh) { .cover-frame { max-height: calc(100vh - 24px); } }
+    @keyframes coverReveal { from { opacity:0; transform:scale(0.97); } to { opacity:1; transform:scale(1); } }
+    .cover-frame.fading { opacity: 0; }
+
+    .cover-art {
+      display: block;
+      max-height: calc(100svh - 24px);
+      max-width: 100%; width: auto; height: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 24px rgba(0,0,0,0.5)) brightness(1.1) contrast(1.05);
+    }
+    @supports not (max-height:100svh) { .cover-art { max-height: calc(100vh - 24px); } }
+
+    /* Placeholder cover — shown only if the art 404s. Art drops in with no code change. */
+    .cover-placeholder { display: none; }
+    .cover-frame.no-art .cover-art { display: none; }
+    .cover-frame.no-art .cover-placeholder {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      aspect-ratio: 680 / 1027;
+      width: min(calc((100svh - 48px) * 0.662), calc(100vw - 32px));
+      padding: 2rem 1.5rem;
+      text-align: center;
+      background:
+        radial-gradient(circle at 50% 42%, rgba(255,255,255,0.06) 0%, transparent 34%),
+        linear-gradient(180deg, var(--chalkboard) 0%, var(--forest-dark) 100%);
+      border: 2px solid var(--chalkboard-border);
+      outline: 1px solid rgba(240,232,216,0.15);
+      outline-offset: -14px;
+      border-radius: 4px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+    }
+    @supports not (height:100svh) { .cover-frame.no-art .cover-placeholder { width: min(calc((100vh - 48px) * 0.662), calc(100vw - 32px)); } }
+    .cover-placeholder .eyebrow {
+      font-family: 'Archivo Black', Impact, sans-serif;
+      text-transform: uppercase; letter-spacing: 0.15em; font-size: 0.7rem;
+      color: var(--orange); margin-bottom: 1.25rem;
+    }
+    .cover-placeholder h1 {
+      font-family: 'Permanent Marker', cursive;
+      font-size: clamp(1.8rem, 8vw, 3rem);
+      color: var(--chalk-bright); line-height: 1.15; margin-bottom: 0.5rem;
+    }
+    .cover-placeholder .subtitle {
+      font-family: 'Caveat', cursive; font-size: clamp(1.2rem, 4vw, 1.6rem);
+      color: var(--gold); margin-bottom: 1.5rem;
+    }
+    .cover-placeholder .tagline {
+      font-style: italic; font-size: 0.95rem; color: var(--chalk);
+      max-width: 28ch; line-height: 1.7;
+    }
+
+    .scroll-hint-cover {
+      position: absolute; bottom: max(24px, env(safe-area-inset-bottom));
+      left: 50%; transform: translateX(-50%); z-index: 1002;
+      font-family: 'Caveat', cursive; font-size: 1rem;
+      color: var(--chalk-dim);
+      animation: hintPulse 2.5s ease-in-out infinite;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    @keyframes hintPulse {
+      0%,100% { opacity:0.5; transform:translateX(-50%); }
+      50% { opacity:0.9; transform:translateX(-50%) translateX(4px); }
+    }
+
+    .cover-text { display: none; }
+
+    /* ---- PROGRESS BAR (hidden on cover) ---- */
+    .progress-bar {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+      height: calc(var(--progress-height) + env(safe-area-inset-bottom));
+      padding-bottom: env(safe-area-inset-bottom);
+      padding-left: max(1rem, env(safe-area-inset-left));
+      padding-right: max(1rem, env(safe-area-inset-right));
+      display: flex; align-items: center; justify-content: space-between;
+      background: linear-gradient(to top, var(--parchment) 0%, var(--parchment) 60%, rgba(26,21,16,0.95) 80%, rgba(26,21,16,0.6) 100%);
+      opacity: 0; transition: opacity 0.5s ease; pointer-events: none;
+    }
+    .progress-bar.visible { opacity: 1; pointer-events: auto; }
+    .progress-label { font-family: 'Caveat', cursive; font-size: 0.85rem; color: var(--chalk-dim); flex-shrink: 0; }
+    .progress-dots { display: flex; align-items: center; gap: 8px; padding: 0 8px; }
+    .progress-dot {
+      width: 9px; height: 9px; border-radius: 50%;
+      border: 1.5px solid var(--chalk-dim); background: transparent;
+      cursor: pointer; transition: all 0.25s ease; position: relative;
+      -webkit-tap-highlight-color: transparent; flex-shrink: 0;
+    }
+    .progress-dot::before { content:''; position:absolute; top:-17px; left:-17px; right:-17px; bottom:-17px; }
+    .progress-dot.active { background: var(--orange); border-color: var(--orange); box-shadow: 0 0 8px rgba(232,93,4,0.4); }
+    .progress-dot:active { transform: scale(1.3); }
+
+    /* ---- Arrow hint ---- */
+    .arrow-hint {
+      position: fixed; right: max(12px, env(safe-area-inset-right)); top: 50%;
+      transform: translateY(-50%); z-index: 50;
+      font-size: 1.5rem; color: var(--chalk-dim); opacity: 0;
+      animation: arrowPulse 2s ease-in-out infinite;
+      pointer-events: none; transition: opacity 0.3s ease;
+    }
+    .arrow-hint.visible { opacity: 0.3; }
+    .arrow-hint.hidden { opacity: 0; }
+    @keyframes arrowPulse {
+      0%,100% { transform: translateY(-50%) translateX(0); }
+      50% { transform: translateY(-50%) translateX(4px); }
+    }
+
+    /* ---- DESKTOP ---- */
+    @media (min-width: 769px) {
+      .panel--cover .cover-layout { flex-direction: row; }
+      .cover-art-wrapper { flex: 0 0 50%; justify-content: flex-end; padding: 2rem; }
+      .cover-frame { max-height: 94vh; }
+      .cover-art { max-height: 94vh; filter: drop-shadow(0 8px 40px rgba(0,0,0,0.6)) brightness(1.1) contrast(1.05); }
+      .cover-frame.no-art .cover-placeholder { width: min(calc(90vh * 0.662), 100%); }
+      .cover-text {
+        display: flex; flex-direction: column; justify-content: center;
+        flex: 0 0 50%; padding: 4rem;
+        animation: textSlideIn 0.8s ease-out 0.3s forwards; opacity: 0;
+      }
+      @keyframes textSlideIn { from { opacity:0; transform:translateX(30px); } to { opacity:1; transform:translateX(0); } }
+      .cover-text .eyebrow { font-family:'Archivo Black',sans-serif; text-transform:uppercase; letter-spacing:0.15em; font-size:0.75rem; color:var(--orange); margin-bottom:1rem; }
+      .cover-text h1 { font-family:'Permanent Marker',cursive; font-size:clamp(2.5rem,4.5vw,4rem); color:var(--chalk-bright); line-height:1.1; margin-bottom:0.5rem; }
+      .cover-text .subtitle { font-family:'Caveat',cursive; font-size:clamp(1.1rem,1.8vw,1.4rem); color:var(--gold); margin-bottom:2rem; }
+      .cover-text .description { font-size:1.05rem; max-width:36ch; line-height:1.7; margin-bottom:2.5rem; color:var(--chalk); }
+      .cover-text .cta { font-family:'Caveat',cursive; font-size:1.2rem; color:var(--orange); animation:hintPulse 2.5s ease-in-out infinite; }
+      .scroll-hint-cover { display: none; }
+      .panel-content { max-width: 800px; }
+    }
+    @media (min-width:1200px) {
+      .cover-art-wrapper { flex:0 0 45%; padding: 2rem 2rem 2rem 4rem; }
+      .cover-text { flex:0 0 55%; padding: 4rem 6rem; }
+    }
+
+    @media (max-width: 480px) {
+      .pitch-board { padding: 0.75rem 0.5rem; }
+      .pitch-board th, .pitch-board td { padding: 0.4rem 0.3rem; }
+      .lane { font-size: 0.95rem; }
+    }
+
+    @media (max-width: 375px) {
+      .progress-dots { gap: 4px; }
+      .progress-dot { width: 7px; height: 7px; }
+      .progress-label { font-size: 0.7rem; }
+      .panel-title { font-size: 1.5rem; }
+      .turn-node { width: 34px; height: 34px; font-size: 0.65rem; }
+      .lane { font-size: 1rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,*::before,*::after { animation-duration:0.01ms!important; transition-duration:0.01ms!important; }
+      .cover-frame,.cover-text { opacity:1; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="topbar" id="topbar">
+    <a href="/woda/">← WODA</a>
+    <span class="topbar-label">A WODA Game</span>
+  </nav>
+  <span class="arrow-hint" id="arrowHint">›</span>
+
+  <div class="crawl" id="crawl">
+
+    <!-- ======== PANEL 0: COVER ======== -->
+    <section class="panel panel--cover" data-label="Cover">
+      <div class="panel-content">
+        <div class="cover-layout">
+          <div class="cover-art-wrapper">
+            <div class="cover-frame" id="coverFrame">
+              <img src="../../images/beautiful-game-cover.png"
+                alt="The Beautiful Outdoor Game (of Darts)"
+                class="cover-art" id="coverArt" loading="eager" fetchpriority="high"
+                onerror="document.getElementById('coverFrame').classList.add('no-art')">
+              <div class="cover-placeholder">
+                <p class="eyebrow">A WODA Game</p>
+                <h1>The Beautiful Outdoor Game</h1>
+                <p class="subtitle">(of Darts)</p>
+                <p class="tagline">Soccer, played with darts. The board is the pitch.</p>
+              </div>
+            </div>
+          </div>
+          <div class="cover-text">
+            <p class="eyebrow">A WODA Game</p>
+            <h1>The Beautiful Outdoor Game</h1>
+            <p class="subtitle">(of Darts)</p>
+            <p class="description">Soccer, played with darts. The board is the pitch.</p>
+            <p class="cta">Scroll for kickoff →</p>
+          </div>
+        </div>
+      </div>
+      <span class="scroll-hint-cover">Swipe for kickoff →</span>
+    </section>
+
+    <!-- ======== PANEL 1: THE PITCH ======== -->
+    <section class="panel" data-label="The Pitch">
+      <div class="panel-content">
+        <p class="panel-number">I</p>
+        <h2 class="panel-title">The Pitch</h2>
+        <div class="narrative">
+          <p>The board has always been a pitch — twenty numbers, two goals, and nobody noticed.</p>
+          <p>The <strong>20</strong> is one goal. The <strong>3</strong> is the other. The <strong>11</strong> and <strong>6</strong> are the midfield line, and crossing it carelessly has consequences.</p>
+          <p>Two halves, switch ends at halftime. Most goals at full time wins.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======== PANEL 2: THE MATCH ======== -->
+    <section class="panel" data-label="The Match">
+      <div class="panel-content">
+        <p class="panel-number">II</p>
+        <h2 class="panel-title">The Match</h2>
+        <p class="panel-subtitle">Two goals, two halves, one board</p>
+        <table class="rules-table">
+          <tr><th>Element</th><th>Rule</th></tr>
+          <tr><td><strong>Goals</strong></td><td>20 (top) · 3 (bottom)</td></tr>
+          <tr><td><strong>Midfield line</strong></td><td>11 and 6</td></tr>
+          <tr><td><strong>Halves</strong></td><td>4 minutes each (group play) · 5 minutes (knockout) + stoppage time</td></tr>
+          <tr><td><strong>Kickoff</strong></td><td>Closest to bull is the coin toss. Winner chooses which end to attack OR takes kickoff.</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- ======== PANEL 3: POSSESSION ======== -->
+    <section class="panel" data-label="Possession">
+      <div class="panel-content">
+        <p class="panel-number">III</p>
+        <h2 class="panel-title">Possession</h2>
+        <p class="panel-subtitle">Two wings to every goal</p>
+        <div class="pitch-board">
+          <table>
+            <tr><th>Attacking</th><th>Left Wing</th><th>Right Wing</th></tr>
+            <tr>
+              <td>The 20</td>
+              <td><span class="lane">14 → 9 → 12 → 5</span></td>
+              <td><span class="lane">13 → 4 → 18 → 1</span></td>
+            </tr>
+            <tr>
+              <td>The 3</td>
+              <td><span class="lane">8 → 16 → 7 → 19</span></td>
+              <td><span class="lane">10 → 15 → 2 → 17</span></td>
+            </tr>
+          </table>
+        </div>
+        <p>Work down a wing, then <strong>shoot on the goal number</strong>.</p>
+        <p>From midfield, either wing. Once you hit on one side, <strong>you stay on that side</strong> until possession changes or play returns to midfield.</p>
+      </div>
+    </section>
+
+    <!-- ======== PANEL 4: PASSING & LONG BALLS ======== -->
+    <section class="panel" data-label="Passing">
+      <div class="panel-content">
+        <p class="panel-number">IV</p>
+        <h2 class="panel-title">Passing &amp; Long Balls</h2>
+        <p class="panel-subtitle">Singles move the ball. Doubles move it faster.</p>
+        <table class="rules-table">
+          <tr><th>Dart</th><th>Result</th></tr>
+          <tr><td><strong>Single</strong></td><td>A pass to the next number in the lane</td></tr>
+          <tr><td><strong>Double</strong></td><td>Long pass — advance <strong>two</strong> positions</td></tr>
+          <tr><td><strong>Triple</strong></td><td>Advance <strong>three</strong> (T14 puts the ball on the 5)</td></tr>
+          <tr><td><strong>Stray dart</strong></td><td>Other numbers (not 11, 6, or bull): nothing happens — keep throwing at your target</td></tr>
+        </table>
+        <div class="result-card victory">
+          <p class="result-label">Magic Feet ✦</p>
+          <p>Hit your target with all three darts → take another turn immediately.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======== PANEL 5: DEFENDING ======== -->
+    <section class="panel" data-label="Defending">
+      <div class="panel-content">
+        <p class="panel-number">V</p>
+        <h2 class="panel-title">Defending</h2>
+        <p class="panel-subtitle">The ball doesn't reset. It sits where you left it.</p>
+        <p>At the end of your turn, the ball sits at the <strong>last lane number you hit</strong>. Your opponent must hit that number first, then work back the other way.</p>
+        <p style="font-family:'Caveat',cursive; font-size:1.2rem; color:var(--chalk-bright);">You hit 14 then 9 → they need 9, then 14, and onward.</p>
+        <p>At midfield, the player in possession may choose either wing — <strong>the switch of fields</strong>.</p>
+      </div>
+    </section>
+
+    <!-- ======== PANEL 6: OUT OF BOUNDS ======== -->
+    <section class="panel" data-label="Out of Bounds">
+      <div class="panel-content">
+        <p class="panel-number">VI</p>
+        <h2 class="panel-title">Out of Bounds</h2>
+        <p class="panel-subtitle">A dart off the board is a dead ball</p>
+        <p>Your turn ends immediately, darts in hand or not.</p>
+        <div class="result-card escape">
+          <p class="result-label">Throw-In</p>
+          <p>Out beside the sidelines (near 7–12 left, 18–2 right): opponent plays from the last number hit.</p>
+        </div>
+        <div class="result-card death">
+          <p class="result-label">Goal Kick</p>
+          <p>Attacker misses past the end line they're attacking (near 5/20/1 top, 19/3/17 bottom): defender restarts. <strong>Short:</strong> hit a number beside your own goal (defending the 20: the 5 or 1) and pass out toward midfield — risky, your opponent starts wherever you leave it. <strong>Long ball:</strong> throw beyond midfield; defending the 20, hitting 8–7 left or 10–2 right connects the long pass, play from there. Too deep (19/3/17) = <strong class="danger">turnover</strong>.</p>
+        </div>
+        <div class="result-card victory">
+          <p class="result-label">Corner Kick</p>
+          <p>Defender puts it out over their own end line: attacker restarts. First dart aims at the goal; play continues wherever it lands. Hitting the goal number = <strong>shot on goal</strong> (follow-up still required).</p>
+        </div>
+        <p style="font-size:0.9rem; color:var(--chalk-dim);">Every restart: wherever the first dart lands is where play lives.</p>
+      </div>
+    </section>
+
+    <!-- ======== PANEL 7: THE MIDFIELD LINE ======== -->
+    <section class="panel" data-label="Midfield">
+      <div class="panel-content">
+        <p class="panel-number">VII</p>
+        <h2 class="panel-title" style="color:var(--blood);">The Midfield Line</h2>
+        <p class="panel-subtitle" style="color:var(--blood);">The 11 and 6 are watching. So is the referee.</p>
+        <p>Hit an <strong>11</strong> or <strong>6</strong>, any time: <strong class="danger">foul</strong>. Possession over.</p>
+        <div class="result-card escape">
+          <p class="result-label" style="color:var(--gold);">Yellow Card</p>
+          <p>Double 11 or double 6.</p>
+        </div>
+        <div class="result-card death">
+          <p class="result-label">Red Card</p>
+          <p>Triple 11 or triple 6.</p>
+        </div>
+        <p style="margin-top:1rem;">Two yellows or one red: <strong>lose a dart</strong> for the rest of the match (two darts a turn). A second red: <strong class="danger">one dart</strong>.</p>
+        <p>An accidental bullseye on your turn is an <strong class="danger">own goal</strong>. The board keeps score of hubris.</p>
+      </div>
+    </section>
+
+    <!-- ======== PANEL 8: SCORING & SAVES ======== -->
+    <section class="panel" data-label="Scoring">
+      <div class="panel-content">
+        <p class="panel-number">VIII</p>
+        <h2 class="panel-title" style="color:var(--gold);">Scoring &amp; Saves</h2>
+        <p class="panel-subtitle">One dart to shoot. One dart to finish.</p>
+        <p><strong>First hit</strong> of the goal number = shot on goal. <strong>Second hit, same turn</strong> = <strong class="reward">GOAL</strong>.</p>
+        <p><strong>Double or triple</strong> of the goal number = <strong class="reward">GOAL</strong>, no follow-up needed.</p>
+        <div class="result-card escape">
+          <p class="result-label">The Save</p>
+          <p>Shot lands on your <strong>last</strong> dart? Defender can save: goal number with their first dart, then pass out either side (defending the 3: left <span class="lane">19 → 7 → 16 → 8</span> or right <span class="lane">17 → 2 → 15 → 10</span>).</p>
+        </div>
+        <p>After a goal, the team scored on restarts at midfield.</p>
+      </div>
+    </section>
+
+    <!-- ======== PANEL 9: FULL TIME ======== -->
+    <section class="panel" data-label="Full Time">
+      <div class="panel-content">
+        <p class="panel-number">IX</p>
+        <h2 class="panel-title">Full Time</h2>
+        <p class="panel-subtitle">And if it's level when the whistle blows —</p>
+        <p><strong>Tied in knockout:</strong> extra time, two 1-minute halves, switch ends.</p>
+        <div class="result-card victory">
+          <p class="result-label">The Shootout</p>
+          <p>Still tied: closest to bull picks the goal (20 or 3). Three darts each at that number — singles 1, doubles 2, triples 3 (T20 + S20 + miss = 4). Tied: sudden death, one dart each.</p>
+        </div>
+        <p>Pace of play is legal strategy. <strong>Throw faster, get more turns.</strong></p>
+      </div>
+    </section>
+
+    <!-- ======== PANEL 10: PENALTY KICKS ======== -->
+    <section class="panel" data-label="Penalty Kicks">
+      <div class="panel-content">
+        <p class="panel-number">X</p>
+        <h2 class="panel-title">Penalty Kicks</h2>
+        <div class="locked">
+          <p class="locked-title">Yet to Be Revealed — Penalty Kicks</p>
+          <p>There are fouls. There are cards. But a penalty kick in open play? WODA Labs is still on the training ground.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======== PANEL 11: THE DECISION ======== -->
+    <section class="panel" data-label="The Decision">
+      <div class="panel-content">
+        <p class="panel-number">XI</p>
+        <h2 class="panel-title">The Decision</h2>
+        <div class="scenario">
+          <p class="scenario-question">What Do You Do?</p>
+          <div class="scenario-setup">
+            <p>Down a goal. Forty seconds on the clock. The ball's at midfield. Your left wing has been money all night — but your opponent is parked on it, and the right wing is wide open.</p>
+          </div>
+          <button class="scenario-btn" onclick="showOutcome('stay')">Stay on the Strong Wing</button>
+          <button class="scenario-btn" onclick="showOutcome('switch')">Switch Fields</button>
+          <div class="scenario-outcome" id="outcome-stay">
+            <p>You trust the arm. 14, then 9 — two passes deep, but your last dart rims out of the 12. Your opponent needs 9-then-14 to march it back, and the clock is your enemy now. You've left them a ladder — but they have to climb it in forty seconds.</p>
+          </div>
+          <div class="scenario-outcome" id="outcome-switch">
+            <p>You go right. The 13 lands. The 4 lands. The 18 — off the wire, out past the 1. Corner to you… if there were time. Full time looms. You gambled on fresh grass and nearly found the goal.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======== PANEL 12: THE MANUAL (CTA) ======== -->
+    <section class="panel cta-panel" data-label="The Manual">
+      <div class="panel-content">
+        <h2 class="panel-title">Full Time</h2>
+        <p class="panel-subtitle">The referee checks his watch.</p>
+        <p>Full rules pamphlet coming soon. <strong>The Manual is being written.</strong></p>
+        <div class="cta-links">
+          <a href="/woda/">← Back to WODA</a>
+          <span class="cta-divider">|</span>
+          <a href="https://x.com/W_O_D_A" target="_blank" rel="noopener" aria-label="Follow on X">
+            <svg class="social-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /crawl -->
+
+  <nav class="progress-bar" id="progressBar" aria-label="Match progress">
+    <span class="progress-label">Kickoff</span>
+    <div class="progress-dots" id="progressDots">
+      <button class="progress-dot active" data-index="0" aria-label="Cover"></button>
+      <button class="progress-dot" data-index="1" aria-label="The Pitch"></button>
+      <button class="progress-dot" data-index="2" aria-label="The Match"></button>
+      <button class="progress-dot" data-index="3" aria-label="Possession"></button>
+      <button class="progress-dot" data-index="4" aria-label="Passing &amp; Long Balls"></button>
+      <button class="progress-dot" data-index="5" aria-label="Defending"></button>
+      <button class="progress-dot" data-index="6" aria-label="Out of Bounds"></button>
+      <button class="progress-dot" data-index="7" aria-label="The Midfield Line"></button>
+      <button class="progress-dot" data-index="8" aria-label="Scoring &amp; Saves"></button>
+      <button class="progress-dot" data-index="9" aria-label="Full Time"></button>
+      <button class="progress-dot" data-index="10" aria-label="Penalty Kicks"></button>
+      <button class="progress-dot" data-index="11" aria-label="The Decision"></button>
+      <button class="progress-dot" data-index="12" aria-label="The Manual"></button>
+    </div>
+    <span class="progress-label">Full Time</span>
+  </nav>
+
+  <script>
+    const crawl = document.getElementById('crawl');
+    const dots = document.querySelectorAll('.progress-dot');
+    const arrowHint = document.getElementById('arrowHint');
+    const topbar = document.getElementById('topbar');
+    const progressBar = document.getElementById('progressBar');
+    const coverFrame = document.getElementById('coverFrame');
+    const panels = document.querySelectorAll('.panel');
+    const totalPanels = panels.length;
+    let currentPanel = 0;
+
+    function updateProgress() {
+      const scrollLeft = crawl.scrollLeft;
+      const panelWidth = crawl.offsetWidth;
+      const newPanel = Math.round(scrollLeft / panelWidth);
+
+      if (newPanel !== currentPanel || currentPanel === 0) {
+        currentPanel = Math.max(0, Math.min(newPanel, totalPanels - 1));
+        dots.forEach((d, i) => d.classList.toggle('active', i === currentPanel));
+
+        // Cover panel: hide UI, show full art
+        if (currentPanel === 0) {
+          topbar.classList.remove('visible');
+          progressBar.classList.remove('visible');
+          arrowHint.classList.remove('visible');
+          coverFrame.classList.remove('fading');
+        } else {
+          topbar.classList.add('visible');
+          progressBar.classList.add('visible');
+          arrowHint.classList.add('visible');
+          coverFrame.classList.add('fading');
+        }
+
+        // Hide arrow on last panel
+        if (currentPanel >= totalPanels - 1) {
+          arrowHint.classList.add('hidden');
+        } else {
+          arrowHint.classList.remove('hidden');
+        }
+      }
+    }
+
+    crawl.addEventListener('scroll', updateProgress, { passive: true });
+
+    // Click dots to nav
+    dots.forEach(dot => {
+      dot.addEventListener('click', () => {
+        crawl.scrollTo({ left: parseInt(dot.dataset.index) * crawl.offsetWidth, behavior: 'smooth' });
+      });
+    });
+
+    // Keyboard
+    document.addEventListener('keydown', (e) => {
+      const pw = crawl.offsetWidth;
+      if (e.key === 'ArrowRight' && currentPanel < totalPanels - 1) crawl.scrollTo({ left: (currentPanel+1)*pw, behavior:'smooth' });
+      if (e.key === 'ArrowLeft' && currentPanel > 0) crawl.scrollTo({ left: (currentPanel-1)*pw, behavior:'smooth' });
+    });
+
+    // Mouse wheel → horizontal
+    crawl.addEventListener('wheel', (e) => {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        e.preventDefault();
+        const pw = crawl.offsetWidth;
+        if (e.deltaY > 0 && currentPanel < totalPanels - 1) crawl.scrollTo({ left: (currentPanel+1)*pw, behavior:'smooth' });
+        else if (e.deltaY < 0 && currentPanel > 0) crawl.scrollTo({ left: (currentPanel-1)*pw, behavior:'smooth' });
+      }
+    }, { passive: false });
+
+    // Scenario outcomes
+    function showOutcome(choice) {
+      document.getElementById('outcome-stay').classList.toggle('visible', choice === 'stay');
+      document.getElementById('outcome-switch').classList.toggle('visible', choice === 'switch');
+      document.querySelectorAll('.scenario-btn').forEach(b => {
+        b.classList.toggle('selected', b.textContent.toLowerCase().includes(choice === 'stay' ? 'stay' : 'switch'));
+      });
+    }
+  </script>
+</body>
+</html>
