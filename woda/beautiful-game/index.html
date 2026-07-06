@@ -10,23 +10,26 @@
   <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Caveat:wght@400;700&family=Permanent+Marker&family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
   <style>
     :root {
-      --parchment: #1a1510;
-      --parchment-mid: #2a2118;
-      --parchment-light: #3d3024;
-      --chalk: #d4c9b5;
-      --chalk-dim: #7a7060;
-      --chalk-bright: #f0e8d8;
-      --orange: #e85d04;
-      --orange-dark: #bc4b03;
+      /* Grass pitch — stripe hues nudged warm to match sampled cover greens (#404B30 / #7C845F olive cast) */
+      --pitch-a: #33603A;        /* mowed stripe, dark  (spec #2F5E3E, warmed) */
+      --pitch-b: #3D6E44;        /* mowed stripe, light (spec #376C48, warmed) */
+      --pitch-deep: #16301F;     /* chrome: topbar / progress bar */
+      --poster-mat: #404B30;     /* sampled directly from cover art */
+      --cream: #F6F1DF;          /* primary text */
+      --cream-muted: #DDE7D2;    /* muted text */
+      --chalk: #F6F1DF;
+      --chalk-dim: #DDE7D2;
+      --chalk-bright: #FFFFFF;
+      --ink: #131A12;            /* near-ink slate (tactics board, cards) */
+      --ink-soft: rgba(14, 22, 13, 0.5);
+      --line: rgba(255, 255, 255, 0.92);   /* field lines: content frames */
+      --line-soft: rgba(255, 255, 255, 0.5); /* field lines: background geometry */
+      --orange: #e85d04;         /* roman numerals + active states ONLY */
       --orange-glow: #f48c06;
-      --blood: #8b1a1a;
-      --blood-dim: #5a1111;
-      --forest-dark: #1a2e1a;
-      --forest: #2d4a2e;
-      --gold: #c9a227;
-      --gold-dim: #8a7020;
-      --chalkboard: #1a3328;
-      --chalkboard-border: #2a4a38;
+      --blood: #8b1a1a;          /* borders only */
+      --gold: #c9a227;           /* borders + labels on ink surfaces */
+      --card-yellow: #F2C94C;    /* AA-safe yellow-card / reward text */
+      --card-red: #F26D6D;       /* AA-safe red-card text on ink surfaces */
       --progress-height: 48px;
       --topbar-height: 44px;
     }
@@ -34,15 +37,19 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     html {
-      background-color: var(--parchment);
+      background-color: var(--pitch-a);
       -webkit-text-size-adjust: 100%;
       text-size-adjust: 100%;
     }
 
     body {
       font-family: 'Source Serif 4', Georgia, serif;
-      background-color: var(--parchment);
-      color: var(--chalk);
+      background: repeating-linear-gradient(
+        to bottom,
+        var(--pitch-a) 0, var(--pitch-a) 12.5vh,
+        var(--pitch-b) 12.5vh, var(--pitch-b) 25vh
+      );
+      color: var(--cream);
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
       overflow: hidden;
@@ -56,9 +63,20 @@
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
       background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-      opacity: 0.25;
+      opacity: 0.07;
+      mix-blend-mode: overlay;
       pointer-events: none;
       z-index: 1000;
+    }
+
+    /* ---- TOUCHLINES (continuous down both page edges) ---- */
+    .touchlines {
+      position: fixed; top: 0; bottom: 0; left: 0; right: 0;
+      border-left: 2px solid var(--line-soft);
+      border-right: 2px solid var(--line-soft);
+      margin: 0 8px;
+      pointer-events: none;
+      z-index: 20;
     }
 
     /* ---- TOP NAV (hidden on cover) ---- */
@@ -69,7 +87,7 @@
       padding-left: max(1rem, env(safe-area-inset-left));
       padding-right: max(1rem, env(safe-area-inset-right));
       padding-bottom: 20px;
-      background: linear-gradient(to bottom, rgba(26,21,16,0.92) 0%, rgba(26,21,16,0.6) 50%, transparent 100%);
+      background: linear-gradient(to bottom, rgba(22,48,31,0.95) 0%, rgba(22,48,31,0.6) 50%, transparent 100%);
       opacity: 0;
       transition: opacity 0.5s ease;
       pointer-events: none;
@@ -79,14 +97,14 @@
     .topbar a {
       font-family: 'Archivo Black', Impact, sans-serif;
       text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.1em;
-      color: var(--orange); text-decoration: none;
+      color: var(--cream); text-decoration: none;
       padding: 12px 4px; min-height: 44px; min-width: 44px;
       display: inline-flex; align-items: center;
       -webkit-tap-highlight-color: transparent;
     }
     .topbar a:active { color: var(--orange-glow); }
     @media (hover:hover) { .topbar a:hover { color: var(--orange-glow); } }
-    .topbar-label { font-family: 'Caveat', cursive; font-size: 1rem; color: var(--chalk-dim); padding: 12px 4px; }
+    .topbar-label { font-family: 'Caveat', cursive; font-size: 1rem; color: var(--cream-muted); padding: 12px 4px; }
 
     /* ---- SCROLL CONTAINER ---- */
     .crawl {
@@ -112,13 +130,14 @@
       padding: calc(var(--topbar-height) + env(safe-area-inset-top) + 20px) max(1.5rem, env(safe-area-inset-left)) calc(var(--progress-height) + env(safe-area-inset-bottom) + 20px) max(1.5rem, env(safe-area-inset-right));
       max-width: 720px; margin: 0 auto; width: 100%;
       min-height: 100%;
+      position: relative; z-index: 1;
     }
 
     /* ---- Typography ---- */
     .panel-number {
       font-family: 'Archivo Black', Impact, sans-serif;
       font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase;
-      color: var(--chalk-dim); margin-bottom: 0.5rem;
+      color: var(--orange); margin-bottom: 0.5rem;
     }
     .panel-title {
       font-family: 'Permanent Marker', cursive;
@@ -127,15 +146,15 @@
     }
     .panel-subtitle {
       font-family: 'Caveat', cursive; font-size: 1.2rem;
-      color: var(--gold); margin-bottom: 1.5rem;
+      color: var(--card-yellow); margin-bottom: 1.5rem;
     }
     .panel p { margin-bottom: 1rem; max-width: 55ch; font-size: 1rem; }
     .panel strong { color: var(--chalk-bright); }
 
     /* ---- Narrative block ---- */
     .narrative {
-      background: var(--forest-dark);
-      border-left: 3px solid var(--forest);
+      background: var(--ink-soft);
+      border-left: 3px solid var(--line);
       padding: 1.25rem 1.5rem; margin: 1rem 0;
       border-radius: 0 4px 4px 0;
       font-style: italic; line-height: 1.8;
@@ -147,47 +166,44 @@
     .rules-table th {
       font-family: 'Archivo Black', Impact, sans-serif;
       text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.1em;
-      color: var(--orange); text-align: left; padding: 0.5rem 0.75rem;
-      border-bottom: 1px solid var(--parchment-light);
+      color: var(--cream-muted); text-align: left; padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid var(--line-soft);
     }
     .rules-table td {
       padding: 0.5rem 0.75rem;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
+      border-bottom: 1px solid rgba(255,255,255,0.12);
       vertical-align: top;
     }
 
     /* ---- Colors ---- */
-    .danger { color: var(--blood); }
-    .reward { color: var(--gold); }
-
-    /* ---- Lane path (possession lanes) ---- */
-    .turn-path { display: flex; align-items: center; flex-wrap: wrap; gap: 0; margin: 1rem 0; }
-    .turn-node {
-      display: flex; align-items: center; justify-content: center;
-      width: 40px; height: 40px; border-radius: 50%;
-      border: 2px solid var(--orange);
-      font-family: 'Archivo Black', Impact, sans-serif; font-size: 0.75rem;
-      color: var(--orange); flex-shrink: 0;
+    /* red words on grass keep cream text with a red-card underline (AA); on ink cards they go red */
+    .danger {
+      color: var(--cream);
+      text-decoration: underline;
+      text-decoration-color: var(--card-red);
+      text-decoration-thickness: 2px;
+      text-underline-offset: 3px;
     }
-    .turn-node.goal { border-color: var(--gold); color: var(--gold); }
-    .turn-node.mid { border-color: var(--blood); color: var(--blood); border-style: dashed; }
-    .turn-arrow { color: var(--chalk-dim); margin: 0 4px; font-size: 0.8rem; }
+    .result-card .danger { color: var(--card-red); text-decoration: none; }
+    .reward { color: var(--card-yellow); }
 
-    /* ---- Pitch table (possession, on chalkboard green) ---- */
+    /* ---- Pitch table (possession — manager's tactics board) ---- */
     .pitch-board {
-      background: var(--chalkboard); border: 2px solid var(--chalkboard-border);
-      border-radius: 4px; padding: 1rem; margin: 1rem 0;
+      background: var(--ink);
+      border: 2px solid var(--cream);
+      border-radius: 4px; padding: 1rem; margin: 1.25rem 0;
+      box-shadow: 8px 8px 0 rgba(10, 18, 10, 0.55);
       overflow-x: auto; -webkit-overflow-scrolling: touch;
     }
     .pitch-board table { width: 100%; border-collapse: collapse; }
     .pitch-board th {
       font-family: 'Archivo Black', Impact, sans-serif;
       text-transform: uppercase; font-size: 0.65rem; letter-spacing: 0.1em;
-      color: var(--chalk-dim); padding: 0.4rem 0.5rem;
+      color: var(--cream-muted); padding: 0.4rem 0.5rem;
       border-bottom: 1px solid rgba(255,255,255,0.15); text-align: left;
     }
     .pitch-board td {
-      padding: 0.5rem; font-size: 0.95rem; color: var(--chalk);
+      padding: 0.5rem; font-size: 0.95rem; color: var(--cream);
       border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: top;
     }
     .pitch-board td:first-child { font-family: 'Permanent Marker', cursive; color: var(--chalk-bright); white-space: nowrap; }
@@ -195,27 +211,28 @@
 
     /* ---- Result cards ---- */
     .result-card {
-      background: var(--parchment-mid);
-      border-left: 3px solid var(--chalk-dim);
+      background: var(--ink);
+      border-left: 3px solid var(--cream-muted);
       padding: 0.75rem 1rem; margin: 0.5rem 0; font-size: 0.9rem;
     }
     .result-card.death { border-left-color: var(--blood); }
     .result-card.victory { border-left-color: var(--gold); }
-    .result-card.escape { border-left-color: var(--orange); }
+    .result-card.escape { border-left-color: var(--cream); }
     .result-card .result-label {
       font-family: 'Archivo Black', Impact, sans-serif;
       font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase;
       margin-bottom: 0.25rem;
+      color: var(--cream-muted);
     }
-    .result-card.death .result-label { color: var(--blood); }
-    .result-card.victory .result-label { color: var(--gold); }
-    .result-card.escape .result-label { color: var(--orange); }
+    .result-card.death .result-label { color: var(--card-red); }
+    .result-card.victory .result-label { color: var(--card-yellow); }
+    .result-card.escape .result-label { color: var(--cream); }
     .result-card p { margin-bottom: 0; }
 
     /* ---- Yet to Be Revealed ---- */
     .locked {
-      background: var(--parchment-mid);
-      border: 1px dashed var(--chalk-dim);
+      background: var(--ink-soft);
+      border: 1px dashed var(--cream-muted);
       border-radius: 4px; padding: 1.25rem;
       margin: 1rem 0; position: relative;
       overflow: hidden;
@@ -228,16 +245,79 @@
     .locked-title {
       font-family: 'Archivo Black', Impact, sans-serif;
       font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase;
-      color: var(--chalk-dim); margin-bottom: 0.5rem;
+      color: var(--cream-muted); margin-bottom: 0.5rem;
     }
     .locked p {
-      font-style: italic; color: var(--chalk-dim); font-size: 0.9rem;
+      font-style: italic; color: var(--cream-muted); font-size: 0.9rem;
       max-width: 50ch;
     }
 
+    /* ---- Field geometry: corner arcs (Panel VI) ---- */
+    .panel--corners::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(circle at top left, transparent 60px, var(--line-soft) 60px, var(--line-soft) 62px, transparent 63px),
+        radial-gradient(circle at top right, transparent 60px, var(--line-soft) 60px, var(--line-soft) 62px, transparent 63px),
+        radial-gradient(circle at bottom left, transparent 60px, var(--line-soft) 60px, var(--line-soft) 62px, transparent 63px),
+        radial-gradient(circle at bottom right, transparent 60px, var(--line-soft) 60px, var(--line-soft) 62px, transparent 63px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ---- Field geometry: penalty box (Panel VIII) ---- */
+    .penalty-box {
+      border: 2px solid var(--line);
+      border-radius: 2px;
+      padding: 1.25rem 1.25rem 1.5rem;
+      margin: 0.5rem 0 3.5rem;
+      position: relative;
+    }
+    .penalty-box::after {
+      /* the D */
+      content: '';
+      position: absolute;
+      left: 50%; bottom: -56px;
+      transform: translateX(-50%);
+      width: 110px; height: 55px;
+      border: 2px solid var(--line-soft);
+      border-top: none;
+      border-radius: 0 0 110px 110px;
+      pointer-events: none;
+    }
+    .penalty-box::before {
+      /* penalty spot */
+      content: '';
+      position: absolute;
+      left: 50%; bottom: 14px;
+      transform: translateX(-50%);
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--line-soft);
+    }
+    .penalty-box p:last-child { margin-bottom: 0; }
+
+    /* ---- Field geometry: center circle (Panel XI decision) ---- */
+    .decision-kickoff {
+      position: relative;
+      padding: 1.5rem 0;
+      text-align: center;
+    }
+    .decision-kickoff::before {
+      content: '';
+      position: absolute;
+      left: 50%; top: 50%;
+      transform: translate(-50%, -50%);
+      width: 230px; height: 230px;
+      border: 2px solid var(--line-soft);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .decision-kickoff .scenario-btn { position: relative; z-index: 1; }
+
     /* ---- Scenario ---- */
     .scenario {
-      background: var(--parchment-mid); border: 1px solid var(--parchment-light);
+      background: var(--ink-soft); border: 1px solid var(--line-soft);
       padding: 1.25rem; margin: 1rem 0; border-radius: 4px;
     }
     .scenario-question {
@@ -249,16 +329,16 @@
       display: inline-block; font-family: 'Archivo Black', Impact, sans-serif;
       text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em;
       padding: 0.75rem 1.25rem; margin: 0.25rem 0.5rem 0.25rem 0;
-      border: 2px solid var(--orange); color: var(--orange);
+      border: 2px solid var(--cream); color: var(--cream);
       background: transparent; cursor: pointer; border-radius: 4px;
       min-height: 44px; -webkit-tap-highlight-color: transparent;
       transition: all 0.2s ease;
     }
-    .scenario-btn:active, .scenario-btn.selected { background: var(--orange); color: var(--parchment); }
-    @media (hover:hover) { .scenario-btn:hover { background: var(--orange); color: var(--parchment); } }
+    .scenario-btn:active, .scenario-btn.selected { background: var(--orange); border-color: var(--orange); color: var(--ink); }
+    @media (hover:hover) { .scenario-btn:hover { background: var(--orange); border-color: var(--orange); color: var(--ink); } }
     .scenario-outcome {
       display: none; margin-top: 1rem; padding: 1rem;
-      background: var(--parchment); border-radius: 4px;
+      background: var(--ink); border-radius: 4px;
       font-style: italic; line-height: 1.7;
     }
     .scenario-outcome.visible { display: block; }
@@ -270,19 +350,32 @@
     .cta-links a {
       font-family: 'Archivo Black', Impact, sans-serif;
       text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.1em;
-      color: var(--orange); text-decoration: none;
+      color: var(--cream); text-decoration: none;
       padding: 12px 8px; min-height: 44px;
       display: inline-flex; align-items: center;
       -webkit-tap-highlight-color: transparent;
     }
     .cta-links a:active { color: var(--orange-glow); }
     @media (hover:hover) { .cta-links a:hover { color: var(--orange-glow); } }
-    .cta-divider { color: rgba(255,255,255,0.3); }
-    .social-icon { width: 20px; height: 20px; fill: var(--orange); }
+    .cta-divider { color: rgba(255,255,255,0.4); }
+    .social-icon { width: 20px; height: 20px; fill: var(--cream); }
 
     /* ============ COVER PANEL ============ */
     .panel--cover { overflow: hidden; }
     .panel--cover .panel-content { padding: 0; max-width: none; }
+
+    /* kickoff circle behind the poster */
+    .panel--cover::before {
+      content: '';
+      position: absolute;
+      left: 50%; top: 50%;
+      transform: translate(-50%, -50%);
+      width: 74vmin; height: 74vmin;
+      border: 2px solid var(--line-soft);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+    }
 
     .cover-layout { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
     .cover-art-wrapper { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
@@ -291,6 +384,9 @@
       display: flex; align-items: center; justify-content: center;
       max-height: calc(100svh - 24px);
       max-width: 100%;
+      background: var(--poster-mat);
+      border: 1px solid rgba(246, 241, 223, 0.35);
+      padding: 10px;
       z-index: 1001;
       animation: coverReveal 1s ease-out forwards;
       opacity: 0;
@@ -302,12 +398,12 @@
 
     .cover-art {
       display: block;
-      max-height: calc(100svh - 24px);
+      max-height: calc(100svh - 46px);
       max-width: 100%; width: auto; height: auto;
       object-fit: contain;
       filter: drop-shadow(0 4px 24px rgba(0,0,0,0.5)) brightness(1.1) contrast(1.05);
     }
-    @supports not (max-height:100svh) { .cover-art { max-height: calc(100vh - 24px); } }
+    @supports not (max-height:100svh) { .cover-art { max-height: calc(100vh - 46px); } }
 
     /* Placeholder cover — shown only if the art 404s. Art drops in with no code change. */
     .cover-placeholder { display: none; }
@@ -320,9 +416,9 @@
       text-align: center;
       background:
         radial-gradient(circle at 50% 42%, rgba(255,255,255,0.06) 0%, transparent 34%),
-        linear-gradient(180deg, var(--chalkboard) 0%, var(--forest-dark) 100%);
-      border: 2px solid var(--chalkboard-border);
-      outline: 1px solid rgba(240,232,216,0.15);
+        linear-gradient(180deg, var(--poster-mat) 0%, #2C331F 100%);
+      border: 2px solid rgba(246, 241, 223, 0.35);
+      outline: 1px solid rgba(246, 241, 223, 0.15);
       outline-offset: -14px;
       border-radius: 4px;
       box-shadow: 0 4px 24px rgba(0,0,0,0.5);
@@ -331,7 +427,7 @@
     .cover-placeholder .eyebrow {
       font-family: 'Archivo Black', Impact, sans-serif;
       text-transform: uppercase; letter-spacing: 0.15em; font-size: 0.7rem;
-      color: var(--orange); margin-bottom: 1.25rem;
+      color: var(--cream-muted); margin-bottom: 1.25rem;
     }
     .cover-placeholder h1 {
       font-family: 'Permanent Marker', cursive;
@@ -340,10 +436,10 @@
     }
     .cover-placeholder .subtitle {
       font-family: 'Caveat', cursive; font-size: clamp(1.2rem, 4vw, 1.6rem);
-      color: var(--gold); margin-bottom: 1.5rem;
+      color: var(--card-yellow); margin-bottom: 1.5rem;
     }
     .cover-placeholder .tagline {
-      font-style: italic; font-size: 0.95rem; color: var(--chalk);
+      font-style: italic; font-size: 0.95rem; color: var(--cream);
       max-width: 28ch; line-height: 1.7;
     }
 
@@ -351,7 +447,7 @@
       position: absolute; bottom: max(24px, env(safe-area-inset-bottom));
       left: 50%; transform: translateX(-50%); z-index: 1002;
       font-family: 'Caveat', cursive; font-size: 1rem;
-      color: var(--chalk-dim);
+      color: var(--cream-muted);
       animation: hintPulse 2.5s ease-in-out infinite;
       pointer-events: none;
       white-space: nowrap;
@@ -371,15 +467,15 @@
       padding-left: max(1rem, env(safe-area-inset-left));
       padding-right: max(1rem, env(safe-area-inset-right));
       display: flex; align-items: center; justify-content: space-between;
-      background: linear-gradient(to top, var(--parchment) 0%, var(--parchment) 60%, rgba(26,21,16,0.95) 80%, rgba(26,21,16,0.6) 100%);
+      background: linear-gradient(to top, var(--pitch-deep) 0%, var(--pitch-deep) 60%, rgba(22,48,31,0.95) 80%, rgba(22,48,31,0.6) 100%);
       opacity: 0; transition: opacity 0.5s ease; pointer-events: none;
     }
     .progress-bar.visible { opacity: 1; pointer-events: auto; }
-    .progress-label { font-family: 'Caveat', cursive; font-size: 0.85rem; color: var(--chalk-dim); flex-shrink: 0; }
+    .progress-label { font-family: 'Caveat', cursive; font-size: 0.85rem; color: var(--cream-muted); flex-shrink: 0; }
     .progress-dots { display: flex; align-items: center; gap: 8px; padding: 0 8px; }
     .progress-dot {
       width: 9px; height: 9px; border-radius: 50%;
-      border: 1.5px solid var(--chalk-dim); background: transparent;
+      border: 1.5px solid var(--cream-muted); background: transparent;
       cursor: pointer; transition: all 0.25s ease; position: relative;
       -webkit-tap-highlight-color: transparent; flex-shrink: 0;
     }
@@ -391,11 +487,11 @@
     .arrow-hint {
       position: fixed; right: max(12px, env(safe-area-inset-right)); top: 50%;
       transform: translateY(-50%); z-index: 50;
-      font-size: 1.5rem; color: var(--chalk-dim); opacity: 0;
+      font-size: 1.5rem; color: var(--cream); opacity: 0;
       animation: arrowPulse 2s ease-in-out infinite;
       pointer-events: none; transition: opacity 0.3s ease;
     }
-    .arrow-hint.visible { opacity: 0.3; }
+    .arrow-hint.visible { opacity: 0.4; }
     .arrow-hint.hidden { opacity: 0; }
     @keyframes arrowPulse {
       0%,100% { transform: translateY(-50%) translateX(0); }
@@ -407,7 +503,7 @@
       .panel--cover .cover-layout { flex-direction: row; }
       .cover-art-wrapper { flex: 0 0 50%; justify-content: flex-end; padding: 2rem; }
       .cover-frame { max-height: 94vh; }
-      .cover-art { max-height: 94vh; filter: drop-shadow(0 8px 40px rgba(0,0,0,0.6)) brightness(1.1) contrast(1.05); }
+      .cover-art { max-height: calc(94vh - 22px); filter: drop-shadow(0 8px 40px rgba(0,0,0,0.6)) brightness(1.1) contrast(1.05); }
       .cover-frame.no-art .cover-placeholder { width: min(calc(90vh * 0.662), 100%); }
       .cover-text {
         display: flex; flex-direction: column; justify-content: center;
@@ -415,11 +511,11 @@
         animation: textSlideIn 0.8s ease-out 0.3s forwards; opacity: 0;
       }
       @keyframes textSlideIn { from { opacity:0; transform:translateX(30px); } to { opacity:1; transform:translateX(0); } }
-      .cover-text .eyebrow { font-family:'Archivo Black',sans-serif; text-transform:uppercase; letter-spacing:0.15em; font-size:0.75rem; color:var(--orange); margin-bottom:1rem; }
+      .cover-text .eyebrow { font-family:'Archivo Black',sans-serif; text-transform:uppercase; letter-spacing:0.15em; font-size:0.75rem; color:var(--cream-muted); margin-bottom:1rem; }
       .cover-text h1 { font-family:'Permanent Marker',cursive; font-size:clamp(2.5rem,4.5vw,4rem); color:var(--chalk-bright); line-height:1.1; margin-bottom:0.5rem; }
-      .cover-text .subtitle { font-family:'Caveat',cursive; font-size:clamp(1.1rem,1.8vw,1.4rem); color:var(--gold); margin-bottom:2rem; }
-      .cover-text .description { font-size:1.05rem; max-width:36ch; line-height:1.7; margin-bottom:2.5rem; color:var(--chalk); }
-      .cover-text .cta { font-family:'Caveat',cursive; font-size:1.2rem; color:var(--orange); animation:hintPulse 2.5s ease-in-out infinite; }
+      .cover-text .subtitle { font-family:'Caveat',cursive; font-size:clamp(1.1rem,1.8vw,1.4rem); color:var(--card-yellow); margin-bottom:2rem; }
+      .cover-text .description { font-size:1.05rem; max-width:36ch; line-height:1.7; margin-bottom:2.5rem; color:var(--cream); }
+      .cover-text .cta { font-family:'Caveat',cursive; font-size:1.2rem; color:var(--cream); animation:hintPulse 2.5s ease-in-out infinite; }
       .scroll-hint-cover { display: none; }
       .panel-content { max-width: 800px; }
     }
@@ -429,9 +525,10 @@
     }
 
     @media (max-width: 480px) {
-      .pitch-board { padding: 0.75rem 0.5rem; }
+      .pitch-board { padding: 0.75rem 0.5rem; box-shadow: 5px 5px 0 rgba(10, 18, 10, 0.55); }
       .pitch-board th, .pitch-board td { padding: 0.4rem 0.3rem; }
       .lane { font-size: 0.95rem; }
+      .decision-kickoff::before { width: 190px; height: 190px; }
     }
 
     @media (max-width: 375px) {
@@ -439,8 +536,6 @@
       .progress-dot { width: 7px; height: 7px; }
       .progress-label { font-size: 0.7rem; }
       .panel-title { font-size: 1.5rem; }
-      .turn-node { width: 34px; height: 34px; font-size: 0.65rem; }
-      .lane { font-size: 1rem; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -450,6 +545,8 @@
   </style>
 </head>
 <body>
+
+  <div class="touchlines"></div>
 
   <nav class="topbar" id="topbar">
     <a href="/woda/">← WODA</a>
@@ -465,7 +562,7 @@
         <div class="cover-layout">
           <div class="cover-art-wrapper">
             <div class="cover-frame" id="coverFrame">
-              <img src="../../images/beautiful-game-cover.png"
+              <img src="../../images/beautiful-game-cover.jpg"
                 alt="The Beautiful Outdoor Game (of Darts)"
                 class="cover-art" id="coverArt" loading="eager" fetchpriority="high"
                 onerror="document.getElementById('coverFrame').classList.add('no-art')">
@@ -577,7 +674,7 @@
     </section>
 
     <!-- ======== PANEL 6: OUT OF BOUNDS ======== -->
-    <section class="panel" data-label="Out of Bounds">
+    <section class="panel panel--corners" data-label="Out of Bounds">
       <div class="panel-content">
         <p class="panel-number">VI</p>
         <h2 class="panel-title">Out of Bounds</h2>
@@ -595,7 +692,7 @@
           <p class="result-label">Corner Kick</p>
           <p>Defender puts it out over their own end line: attacker restarts. First dart aims at the goal; play continues wherever it lands. Hitting the goal number = <strong>shot on goal</strong> (follow-up still required).</p>
         </div>
-        <p style="font-size:0.9rem; color:var(--chalk-dim);">Every restart: wherever the first dart lands is where play lives.</p>
+        <p style="font-size:0.9rem; color:var(--cream-muted);">Every restart: wherever the first dart lands is where play lives.</p>
       </div>
     </section>
 
@@ -603,11 +700,11 @@
     <section class="panel" data-label="Midfield">
       <div class="panel-content">
         <p class="panel-number">VII</p>
-        <h2 class="panel-title" style="color:var(--blood);">The Midfield Line</h2>
-        <p class="panel-subtitle" style="color:var(--blood);">The 11 and 6 are watching. So is the referee.</p>
+        <h2 class="panel-title">The Midfield Line</h2>
+        <p class="panel-subtitle">The 11 and 6 are watching. So is the referee.</p>
         <p>Hit an <strong>11</strong> or <strong>6</strong>, any time: <strong class="danger">foul</strong>. Possession over.</p>
         <div class="result-card escape">
-          <p class="result-label" style="color:var(--gold);">Yellow Card</p>
+          <p class="result-label" style="color:var(--card-yellow);">Yellow Card</p>
           <p>Double 11 or double 6.</p>
         </div>
         <div class="result-card death">
@@ -623,15 +720,17 @@
     <section class="panel" data-label="Scoring">
       <div class="panel-content">
         <p class="panel-number">VIII</p>
-        <h2 class="panel-title" style="color:var(--gold);">Scoring &amp; Saves</h2>
+        <h2 class="panel-title">Scoring &amp; Saves</h2>
         <p class="panel-subtitle">One dart to shoot. One dart to finish.</p>
-        <p><strong>First hit</strong> of the goal number = shot on goal. <strong>Second hit, same turn</strong> = <strong class="reward">GOAL</strong>.</p>
-        <p><strong>Double or triple</strong> of the goal number = <strong class="reward">GOAL</strong>, no follow-up needed.</p>
-        <div class="result-card escape">
-          <p class="result-label">The Save</p>
-          <p>Shot lands on your <strong>last</strong> dart? Defender can save: goal number with their first dart, then pass out either side (defending the 3: left <span class="lane">19 → 7 → 16 → 8</span> or right <span class="lane">17 → 2 → 15 → 10</span>).</p>
+        <div class="penalty-box">
+          <p><strong>First hit</strong> of the goal number = shot on goal. <strong>Second hit, same turn</strong> = <strong class="reward">GOAL</strong>.</p>
+          <p><strong>Double or triple</strong> of the goal number = <strong class="reward">GOAL</strong>, no follow-up needed.</p>
+          <div class="result-card escape">
+            <p class="result-label">The Save</p>
+            <p>Shot lands on your <strong>last</strong> dart? Defender can save: goal number with their first dart, then pass out either side (defending the 3: left <span class="lane">19 → 7 → 16 → 8</span> or right <span class="lane">17 → 2 → 15 → 10</span>).</p>
+          </div>
+          <p>After a goal, the team scored on restarts at midfield.</p>
         </div>
-        <p>After a goal, the team scored on restarts at midfield.</p>
       </div>
     </section>
 
@@ -672,8 +771,10 @@
           <div class="scenario-setup">
             <p>Down a goal. Forty seconds on the clock. The ball's at midfield. Your left wing has been money all night — but your opponent is parked on it, and the right wing is wide open.</p>
           </div>
-          <button class="scenario-btn" onclick="showOutcome('stay')">Stay on the Strong Wing</button>
-          <button class="scenario-btn" onclick="showOutcome('switch')">Switch Fields</button>
+          <div class="decision-kickoff">
+            <button class="scenario-btn" onclick="showOutcome('stay')">Stay on the Strong Wing</button>
+            <button class="scenario-btn" onclick="showOutcome('switch')">Switch Fields</button>
+          </div>
           <div class="scenario-outcome" id="outcome-stay">
             <p>You trust the arm. 14, then 9 — two passes deep, but your last dart rims out of the 12. Your opponent needs 9-then-14 to march it back, and the clock is your enemy now. You've left them a ladder — but they have to climb it in forty seconds.</p>
           </div>
